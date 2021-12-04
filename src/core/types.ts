@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { HttpContext } from "..";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { HttpContext } from '..';
 
 /**
  * Specialization of `HttpContext` type for NextJS.
@@ -7,7 +7,7 @@ import { HttpContext } from "..";
 export type NextApiContext<
   TState = any,
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
-  Res extends NextApiResponse = NextApiResponse
+  Res extends NextApiResponse = NextApiResponse,
 > = HttpContext<TState, Req, Res>;
 
 /**
@@ -18,9 +18,7 @@ export type ObjectType<T> = Function & { new (...args: any[]): T };
 /**
  * Represents a route handler.
  */
-export type Handler<Req, Res> = (
-  context: HttpContext<any, Req, Res>
-) => Promise<any> | any;
+export type Handler<Req, Res> = (context: HttpContext<any, Req, Res>) => Promise<any> | any;
 
 /**
  * A handler for call the next action.
@@ -33,17 +31,13 @@ export type NextHandler = (err?: any) => void;
 export type ErrorHandler<Req, Res> = (
   err: any,
   context: HttpContext<any, Req, Res>,
-  next: NextHandler
+  next: NextHandler,
 ) => Promise<any> | any;
 
 /**
  * A handler for middlewares.
  */
-export type Middleware<Req, Res> = (
-  req: Req,
-  res: Res,
-  next: NextHandler
-) => Promise<any> | any;
+export type Middleware<Req, Res> = (req: Req, res: Res, next: NextHandler) => Promise<any> | any;
 
 /**
  * Params object.

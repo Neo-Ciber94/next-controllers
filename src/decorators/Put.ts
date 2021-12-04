@@ -1,4 +1,4 @@
-import { getMetadataStorage } from "../core/getMetadataStorage";
+import { getMetadataStorage } from '../core/getMetadataStorage';
 
 /**
  * Register a handler for 'PUT' requests.
@@ -9,7 +9,7 @@ export default function Put(pattern?: string | RegExp) {
     getMetadataStorage().addAction({
       target: target.constructor,
       pattern: pattern,
-      method: "PUT",
+      method: 'PUT',
       methodName,
     });
   };

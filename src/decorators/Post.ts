@@ -1,4 +1,4 @@
-import { getMetadataStorage } from "../core/getMetadataStorage";
+import { getMetadataStorage } from '../core/getMetadataStorage';
 
 /**
  * Register a handler for 'POST' requests.
@@ -9,7 +9,7 @@ export function Post(pattern?: string | RegExp) {
     getMetadataStorage().addAction({
       target: target.constructor,
       pattern: pattern,
-      method: "POST",
+      method: 'POST',
       methodName,
     });
   };

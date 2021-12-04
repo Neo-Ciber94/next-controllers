@@ -1,4 +1,4 @@
-import { getMetadataStorage, Middleware } from "..";
+import { getMetadataStorage, Middleware } from '..';
 
 /**
  * Register a middleware or collection of middlewares for a given route or controller.

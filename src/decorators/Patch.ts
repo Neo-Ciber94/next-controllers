@@ -1,4 +1,4 @@
-import { getMetadataStorage } from "../core/getMetadataStorage";
+import { getMetadataStorage } from '../core/getMetadataStorage';
 
 /**
  * Register a handler for 'PATCH' requests.
@@ -9,7 +9,7 @@ export function Patch(pattern?: string | RegExp) {
     getMetadataStorage().addAction({
       target: target.constructor,
       pattern: pattern,
-      method: "PATCH",
+      method: 'PATCH',
       methodName,
     });
   };

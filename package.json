@@ -2,13 +2,22 @@
   "name": "next-controllers",
   "version": "0.0.1",
   "license": "MIT",
-  "scripts": {},
+  "files": [
+    "src/**/*"
+  ],
+  "scripts": {
+    "lint": "eslint --ext .ts,.js src",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\""
+  },
   "dependencies": {
     "next": "12.0.4",
     "regexparam": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "16.11.7",
+    "eslint": "^7.32.0",
+    "prettier": "^2.5.1",
+    "prettier-eslint": "^13.0.0",
     "typescript": "^4.5.2"
   }
 }

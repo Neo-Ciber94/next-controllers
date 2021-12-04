@@ -1,4 +1,4 @@
-import { getMetadataStorage } from "../core/getMetadataStorage";
+import { getMetadataStorage } from '../core/getMetadataStorage';
 
 /**
  * Register a handler for 'DELETE' requests.
@@ -9,7 +9,7 @@ export function Delete(pattern?: string | RegExp) {
     getMetadataStorage().addAction({
       target: target.constructor,
       pattern: pattern,
-      method: "DELETE",
+      method: 'DELETE',
       methodName,
     });
   };

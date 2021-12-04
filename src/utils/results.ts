@@ -1,7 +1,7 @@
-import fs from "fs";
-import path from "path";
-import { NextApiResponse } from "next";
-import { HTTP_STATUS_CODES } from ".";
+import fs from 'fs';
+import path from 'path';
+import { NextApiResponse } from 'next';
+import { HTTP_STATUS_CODES } from '.';
 
 /**
  * Represents a handler for an http response.
@@ -60,11 +60,7 @@ export abstract class Results {
    * @param contentType The mime-type of the file.
    * @returns A result for a file download.
    */
-  static download(
-    filePath: string,
-    contentType: string,
-    filename?: string
-  ): Results {
+  static download(filePath: string, contentType: string, filename?: string): Results {
     return new ResultsWithDownload(filePath, contentType, filename);
   }
 
@@ -92,10 +88,7 @@ export abstract class Results {
    * @param message The custom message, if not specified, the default message is used.
    * @returns A result for a status code.
    */
-  static statusCode(
-    statusCode: keyof typeof HTTP_STATUS_CODES,
-    message?: string
-  ): Results {
+  static statusCode(statusCode: keyof typeof HTTP_STATUS_CODES, message?: string): Results {
     return new ResultsWithStatusCode(statusCode, message);
   }
 
@@ -184,10 +177,7 @@ export abstract class Results {
 class ResultsWithStatusCode extends Results {
   private static cache = new Map<number, ResultsWithStatusCode>();
 
-  constructor(
-    private readonly statusCode: number,
-    private readonly message?: string
-  ) {
+  constructor(private readonly statusCode: number, private readonly message?: string) {
     super();
   }
 
@@ -223,16 +213,13 @@ class ResultsWithStatusCodeCreated extends Results {
   }
 
   resolve(res: NextApiResponse<any>): void | Promise<void> {
-    res.setHeader("Location", this.uri);
+    res.setHeader('Location', this.uri);
     return res.status(201).json(this.obj);
   }
 }
 
 class ResultsWithFile extends Results {
-  constructor(
-    private readonly path: string,
-    private readonly contentType: string
-  ) {
+  constructor(private readonly path: string, private readonly contentType: string) {
     super();
   }
 
@@ -241,17 +228,13 @@ class ResultsWithFile extends Results {
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
 
-    res.setHeader("Content-Type", this.contentType);
+    res.setHeader('Content-Type', this.contentType);
     res.status(200);
   }
 }
 
 class ResultsWithDownload extends Results {
-  constructor(
-    private readonly path: string,
-    private readonly contentType: string,
-    private readonly fileName?: string
-  ) {
+  constructor(private readonly path: string, private readonly contentType: string, private readonly fileName?: string) {
     super();
   }
 
@@ -261,8 +244,8 @@ class ResultsWithDownload extends Results {
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
 
-    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
-    res.setHeader("Content-Type", this.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.setHeader('Content-Type', this.contentType);
     res.status(200);
   }
 }

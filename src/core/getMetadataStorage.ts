@@ -1,6 +1,6 @@
-import { Middleware, ObjectType } from "./types";
-import { ActionType } from "./ActionType";
-import { RouteControllerConfig } from "..";
+import { Middleware, ObjectType } from './types';
+import { ActionType } from './ActionType';
+import { RouteControllerConfig } from '..';
 
 interface ControllerMetadata {
   target: ObjectType<any>;
@@ -111,8 +111,7 @@ class ControllerMetadataStorage {
   }
 
   getActions(type: ObjectType<any>): ControllerActionMetadata[] {
-    const result: ControllerActionMetadata[] =
-      this.actionMetadata.get(type) || [];
+    const result: ControllerActionMetadata[] = this.actionMetadata.get(type) || [];
     const actionsMetadata = Array.from(this.actionMetadata.entries());
 
     for (const [target, actions] of actionsMetadata) {
@@ -142,8 +141,7 @@ class ControllerMetadataStorage {
   }
 
   getMiddlewares(type: ObjectType<any>): ControllerMiddlewareMetadata[] {
-    const result: ControllerMiddlewareMetadata[] =
-      this.middlewaresMetadata.get(type) || [];
+    const result: ControllerMiddlewareMetadata[] = this.middlewaresMetadata.get(type) || [];
     const middlewaresMetadata = Array.from(this.middlewaresMetadata.entries());
 
     for (const [target, middlewares] of middlewaresMetadata) {
@@ -156,8 +154,7 @@ class ControllerMetadataStorage {
   }
 
   getContext(type: ObjectType<any>): ControllerHttpContextMetadata[] {
-    const result: ControllerHttpContextMetadata[] =
-      this.contextMetadata.get(type) || [];
+    const result: ControllerHttpContextMetadata[] = this.contextMetadata.get(type) || [];
     const contextMetadata = Array.from(this.contextMetadata.entries());
 
     for (const [target, contexts] of contextMetadata) {

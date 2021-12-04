@@ -1,4 +1,4 @@
-import { parse } from "regexparam";
+import { parse } from 'regexparam';
 
 type RegexParamResult = {
   keys: Array<string> | boolean;
@@ -14,7 +14,7 @@ export class RoutePath {
   constructor(pattern: RegExp);
   constructor(pattern: string);
   constructor(pattern: string | RegExp) {
-    if (typeof pattern === "string") {
+    if (typeof pattern === 'string') {
       this.matches = parse(pattern);
     } else {
       this.matches = parse(pattern);
@@ -33,7 +33,7 @@ export class RoutePath {
       return null;
     }
 
-    if (typeof this.matches.keys === "boolean") {
+    if (typeof this.matches.keys === 'boolean') {
       return result.groups || {};
     } else {
       const keys = this.matches.keys;

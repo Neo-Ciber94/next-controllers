@@ -1,4 +1,4 @@
-import { getMetadataStorage, ObjectType, ValueOrPromise } from "..";
+import { getMetadataStorage, ObjectType, ValueOrPromise } from '..';
 
 export const DEFAULT_CONTROLLER_CONFIG: RouteControllerConfig = Object.freeze({
   statusCodeOnNull: 404,

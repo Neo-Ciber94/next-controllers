@@ -1,4 +1,4 @@
-import { getMetadataStorage, ObjectType } from "..";
+import { getMetadataStorage, ObjectType } from '..';
 
 /**
  * Register a method that handles errors in the form:

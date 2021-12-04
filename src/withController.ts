@@ -1,5 +1,5 @@
-import { NextApiResponse } from "next";
-import path from "path";
+import { NextApiResponse } from 'next';
+import path from 'path';
 import {
   ErrorHandler,
   getMetadataStorage,
@@ -15,7 +15,7 @@ import {
   HttpContext,
   RoutePath,
   HTTP_STATUS_CODES,
-} from ".";
+} from '.';
 
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
@@ -32,7 +32,7 @@ interface ControllerRoute<Req, Res> {
  */
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
-  Res extends NextApiResponse = NextApiResponse
+  Res extends NextApiResponse = NextApiResponse,
 >(target: ObjectType<any>) {
   assertIsValidApiFileName();
 
@@ -42,9 +42,7 @@ export function withController<
   const metadataStore = getMetadataStorage();
   const actions = metadataStore.getActions(target);
   const allMiddlewares = metadataStore.getMiddlewares(target);
-  const controllerMiddlewares = allMiddlewares
-    .filter((m) => m.methodName == null)
-    .map((m) => m.handler);
+  const controllerMiddlewares = allMiddlewares.filter((m) => m.methodName == null).map((m) => m.handler);
 
   // prettier-ignore
   const controllerConfig = metadataStore.getController(target)?.config || DEFAULT_CONTROLLER_CONFIG;
@@ -55,18 +53,16 @@ export function withController<
   // prettier-ignore
   // Binds the 'onError' callback
   const errorHandlerMetadata = metadataStore.getErrorHandler(target);
-  const errorHandler = errorHandlerMetadata
-    ? controller[errorHandlerMetadata.methodName]
-    : null;
+  const errorHandler = errorHandlerMetadata ? controller[errorHandlerMetadata.methodName] : null;
 
   // prettier-ignore
   const onError = (errorHandler?.bind(controller) ?? defaultErrorHandler) as ErrorHandler<Req, Res>;
 
   // Register all the routes of this controller
   for (const action of actions) {
-    const pattern: string | RegExp = action.pattern || "/";
+    const pattern: string | RegExp = action.pattern || '/';
 
-    if (!pattern.toString().startsWith("/")) {
+    if (!pattern.toString().startsWith('/')) {
       throw new Error(`Route pattern must start with "/": ${pattern}`);
     }
 
@@ -89,13 +85,13 @@ export function withController<
   // Returns a handler to the request
   return async function (req: Req, res: Res) {
     // Initialize `HttpContext` state
-    if (typeof stateOrPromise === "function") {
+    if (typeof stateOrPromise === 'function') {
       contextState = await stateOrPromise();
     } else {
       contextState = await stateOrPromise;
     }
 
-    let url = req.url || "/";
+    let url = req.url || '/';
 
     if (!url.startsWith(basePath)) {
       return;
@@ -179,24 +175,24 @@ export function withController<
 function getBasePath() {
   const dirname = __dirname.split(path.sep);
 
-  const idx = dirname.indexOf("api");
+  const idx = dirname.indexOf('api');
 
   if (idx === -1) {
     throw new Error(`Could not find "api/" folder`);
   }
 
-  return "/" + dirname.slice(idx).join("/");
+  return '/' + dirname.slice(idx).join('/');
 }
 
 function findRouteHandler(
   url: string,
   req: NextApiRequestWithParams,
-  routes: ControllerRoute<any, any>[]
+  routes: ControllerRoute<any, any>[],
 ): ControllerRoute<any, any> | null {
   for (const route of routes) {
     const matches = route.path.match(url);
 
-    if ((route.method !== "ALL" && route.method !== req.method) || !matches) {
+    if ((route.method !== 'ALL' && route.method !== req.method) || !matches) {
       continue;
     }
 
@@ -209,13 +205,10 @@ function findRouteHandler(
   return null;
 }
 
-async function handleRequest<
-  Req extends NextApiRequestWithParams,
-  Res extends NextApiResponse
->(
+async function handleRequest<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
   route: ControllerRoute<Req, Res>,
   config: RouteControllerConfig,
-  context: HttpContext<any, Req, Res>
+  context: HttpContext<any, Req, Res>,
 ) {
   const result = await route.handler(context);
 
@@ -236,17 +229,18 @@ async function handleRequest<
     return await result.resolve(context.response);
   }
 
-  if (typeof result === "object" || Array.isArray(result)) {
+  if (typeof result === 'object' || Array.isArray(result)) {
     return context.response.json(result);
   }
 
   return context.response.send(result);
 }
 
-function defaultErrorHandler<
-  Req extends NextApiRequestWithParams,
-  Res extends NextApiResponse
->(err: any, { response }: HttpContext<any, Req, Res>, next: NextHandler) {
+function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
+  err: any,
+  { response }: HttpContext<any, Req, Res>,
+  next: NextHandler,
+) {
   console.error(err);
 
   response.status(500).json({
@@ -263,7 +257,7 @@ function assertIsValidApiFileName() {
 
   if (!pattern.test(fileName)) {
     throw new Error(
-      `Api endpoint filename must match the pattern "[[...params]]" to capture all request but was "${fileName}"`
+      `Api endpoint filename must match the pattern "[[...params]]" to capture all request but was "${fileName}"`,
     );
   }
 }
