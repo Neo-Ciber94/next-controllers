@@ -1,9 +1,18 @@
 {
   "name": "next-controllers",
+  "description": "An api for create routing controllers in nextjs",
   "version": "0.0.1",
   "license": "MIT",
   "files": [
     "src/**/*"
+  ],
+  "keywords": [
+    "nextjs",
+    "api",
+    "router",
+    "routing",
+    "controllers",
+    "typescript"
   ],
   "scripts": {
     "lint": "eslint --ext .ts,.js src",
@@ -19,5 +28,9 @@
     "prettier": "^2.5.1",
     "prettier-eslint": "^13.0.0",
     "typescript": "^4.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Neo-Ciber94/next-controllers.git"
   }
 }
