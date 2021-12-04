@@ -44,3 +44,39 @@ npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorato
 
 ## Usage
 
+Create a file under `pages/api` with the pattern: ``[[...params]]`` 
+to allow catch all the request.
+
+Define the controller on the route.
+
+```ts
+// pages/api/[...hello].ts
+
+import { Get, NextApiContext, withController } from 'next-controllers';
+
+class HelloController {
+  @Get()
+  sayHello() {
+    return 'Hello World!';
+  }
+
+  @Get('/:name')
+  sayHelloTo(context: NextApiContext) {
+    return `Hello ${context.request.params.name}!`;
+  }
+}
+
+export default withController(HelloController);
+```
+
+**Request results:**
+
+```bash
+curl http://localhost:3000/api
+> Hello World!
+```
+
+```bash
+curl http://localhost:3000/api/Alexandra
+> Hello Alexandra!
+```
