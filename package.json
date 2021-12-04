@@ -1,0 +1,14 @@
+{
+  "name": "next-controllers",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {},
+  "dependencies": {
+    "next": "12.0.4",
+    "regexparam": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "16.11.7",
+    "typescript": "^4.5.2"
+  }
+}
