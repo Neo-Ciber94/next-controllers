@@ -37,12 +37,9 @@ Add a `.babelrc` file with the following content:
 ```
 
 Install the `babel` dependencies
-```
-npm i -D @babel/plugin-proposal-class-properties
-```
 
-```
-npm i @babel/plugin-proposal-decorators
+```codecopy
+npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators
 ```
 
 ## Usage

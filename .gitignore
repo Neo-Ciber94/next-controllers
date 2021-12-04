@@ -3,4 +3,5 @@ node_modules/
 
 # typescript
 dist/
+lib/
 *.tsbuildinfo
