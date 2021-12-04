@@ -692,6 +692,13 @@
     "function-bind" "^1.1.1"
     "get-intrinsic" "^1.0.2"
 
+"caller-callsite@^5.0.0":
+  "integrity" "sha512-l3+xZHsuNlFjchy1nl1kpQwi7PhKHgtQ7MOx5ijHwlouAjnwRNjq3AlxH8SGuWiF5XAhb/mSH+c90LIDFjJKtA=="
+  "resolved" "https://registry.npmjs.org/caller-callsite/-/caller-callsite-5.0.0.tgz"
+  "version" "5.0.0"
+  dependencies:
+    "callsites" "^4.0.0"
+
 "caller-path@^0.1.0":
   "integrity" "sha1-lAhe9jWB7NPaqSREqP6U6CV3dR8="
   "resolved" "https://registry.npmjs.org/caller-path/-/caller-path-0.1.0.tgz"

@@ -1,5 +1,4 @@
 import { NextApiResponse } from 'next';
-import callsites from 'callsites';
 import path from 'path';
 import {
   ErrorHandler,
@@ -25,6 +24,10 @@ interface ControllerRoute<Req, Res> {
   middlewares: Middleware<Req, Res>[];
 }
 
+interface WithControllerOptions {
+  basePath?: string;
+}
+
 /**
  * Creates a function from the given controller that handles the requests for this route.
  *
@@ -34,10 +37,10 @@ interface ControllerRoute<Req, Res> {
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>) {
+>(target: ObjectType<any>, options: WithControllerOptions = {}) {
   assertIsValidApiFileName();
 
-  const basePath = getBasePath();
+  const basePath = options.basePath || getBasePath();
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
   const metadataStore = getMetadataStorage();
@@ -273,12 +276,26 @@ function getFileName() {
 function getDirName() {
   // return path.dirname(__filename);
 
-  const stack = callsites();
-  const fileName = stack[1].getFileName();
+  const fileName = getCallerFile(1);
+  console.log('FILENAME: ', fileName);
 
   if (!fileName) {
     throw new Error('Could not find current directory name');
   }
 
   return fileName;
+}
+
+function getCallerFile(depth: number = 1): any {
+  const prepareStackTraceOrg = Error.prepareStackTrace;
+  const err = new Error();
+
+  Error.prepareStackTrace = (_, stack) => stack;
+
+  const stack = err.stack as any;
+  console.log('Stack: ', stack[depth]);
+
+  Error.prepareStackTrace = prepareStackTraceOrg;
+
+  return stack[depth].getFileName();
 }
