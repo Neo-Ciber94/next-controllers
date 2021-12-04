@@ -1,4 +1,5 @@
 import { NextApiResponse } from 'next';
+import callsites from 'callsites';
 import path from 'path';
 import {
   ErrorHandler,
@@ -172,18 +173,6 @@ export function withController<
   };
 }
 
-function getBasePath() {
-  const dirname = __dirname.split(path.sep);
-
-  const idx = dirname.indexOf('api');
-
-  if (idx === -1) {
-    throw new Error(`Could not find "api/" folder`);
-  }
-
-  return '/' + dirname.slice(idx).join('/');
-}
-
 function findRouteHandler(
   url: string,
   req: NextApiRequestWithParams,
@@ -249,10 +238,22 @@ function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends N
   next();
 }
 
+function getBasePath() {
+  const dirname = getDirName().split(path.sep);
+
+  const idx = dirname.indexOf('api');
+
+  if (idx === -1) {
+    throw new Error(`Could not find "api/" folder`);
+  }
+
+  return '/' + dirname.slice(idx).join('/');
+}
+
 // Check if the file is valid for an /api route.
 // This cannot capture all the routes for errors, but it should be enough for most cases.
 function assertIsValidApiFileName() {
-  const fileName = path.basename(__filename, path.extname(__filename));
+  const fileName = getFileName();
   const pattern = /\[\[\.\.\.(.+)\]\]/g;
 
   if (!pattern.test(fileName)) {
@@ -260,4 +261,24 @@ function assertIsValidApiFileName() {
       `Api endpoint filename must match the pattern "[[...params]]" to capture all request but was "${fileName}"`,
     );
   }
+}
+
+function getFileName() {
+  // return path.basename(__filename, path.extname(__filename));
+
+  const dirname = getDirName();
+  return path.basename(dirname, path.extname(dirname));
+}
+
+function getDirName() {
+  // return path.dirname(__filename);
+
+  const stack = callsites();
+  const fileName = stack[1].getFileName();
+
+  if (!fileName) {
+    throw new Error('Could not find current directory name');
+  }
+
+  return fileName;
 }
