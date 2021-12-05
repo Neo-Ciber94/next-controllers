@@ -1,4 +1,4 @@
-import { Get, NextApiContext, RouteController, withController } from 'next-controllers';
+import { Get, NextApiContext, RouteController, withController, OnNoMatch, Results } from 'next-controllers';
 
 @RouteController() // This decorator its optional
 class HelloController {
@@ -12,6 +12,11 @@ class HelloController {
   @Get('/:name')
   sayHelloTo({ request }: NextApiContext) {
     return `Hello ${request.params.name}`;
+  }
+
+  @OnNoMatch()
+  noMatch() {
+    return Results.ok('Oh, oh! hay nada acá');
   }
 }
 

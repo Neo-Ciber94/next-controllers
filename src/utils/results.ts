@@ -41,7 +41,7 @@ export abstract class Results {
    * @returns A result for a text response.
    */
   static text(text: string): Results {
-    return Results.fn((res) => res.send(text));
+    return Results.fn((res) => sendText({ res, text }));
   }
 
   /**
@@ -197,13 +197,9 @@ class ResultsWithStatusCode extends Results {
   }
 
   resolve(res: NextApiResponse<any>): void | Promise<void> {
-    const message = this.message ?? (HTTP_STATUS_CODES as any)[this.statusCode];
-
-    if (message) {
-      return res.status(this.statusCode).send(message);
-    }
-
-    return res.status(this.statusCode).send(this.message);
+    const text = this.message ?? (HTTP_STATUS_CODES as any)[this.statusCode];
+    const statusCode = this.statusCode;
+    sendText({ res, text, statusCode });
   }
 }
 
@@ -248,4 +244,17 @@ class ResultsWithDownload extends Results {
     res.setHeader('Content-Type', this.contentType);
     res.status(200);
   }
+}
+
+interface SendTextOptions {
+  res: NextApiResponse<any>;
+  text: string;
+  statusCode?: number;
+  encoding?: string;
+}
+
+function sendText(options: SendTextOptions): void {
+  const { res, text, statusCode, encoding = 'utf-8' } = options;
+  res.setHeader('Content-Type', `text/plain; charset=${encoding}`);
+  res.status(statusCode ?? 200).send(text);
 }

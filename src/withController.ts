@@ -77,8 +77,18 @@ export function withController<
   const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
 
   // prettier-ignore
-  const onError = (errorHandler?.bind(controller) ?? defaultOnError) as ErrorHandler<Req, Res>;
-  const onNoMatch = (noMatchHandler?.bind(controller) ?? defaultOnNoMatch) as NoReturnHandler<Req, Res>;
+  const _onError = (errorHandler?.bind(controller) ?? defaultOnError) as ErrorHandler<Req, Res>;
+  const _onNoMatch = (noMatchHandler?.bind(controller) ?? defaultOnNoMatch) as NoReturnHandler<Req, Res>;
+
+  const onError: ErrorHandler<Req, Res> = async (err, context, next) => {
+    const result = await _onError(err, context, next);
+    return await sendResponse(context.response, controllerConfig, result);
+  };
+
+  const onNoMatch: NoReturnHandler<Req, Res> = async (context) => {
+    const result = await _onNoMatch(context);
+    return await sendResponse(context.response, controllerConfig, result);
+  };
 
   // Register all the routes of this controller
   for (const action of actions) {
@@ -173,7 +183,7 @@ export function withController<
     }
 
     // Finds the route this request is going to
-    const route = findRouteHandler(url, req, controllerRoutes);
+    const route = findRoute(url, req, controllerRoutes);
 
     if (route) {
       try {
@@ -182,7 +192,8 @@ export function withController<
           return;
         }
 
-        return await handleRequest(route, controllerConfig, httpContext);
+        const result = await route.handler(httpContext);
+        return await sendResponse(httpContext.response, controllerConfig, result);
       } catch (err: any) {
         return next(err);
       }
@@ -193,9 +204,9 @@ export function withController<
   };
 }
 
-function findRouteHandler(
+function findRoute<Req extends NextApiRequestWithParams>(
   url: string,
-  req: NextApiRequestWithParams,
+  req: Req,
   routes: ControllerRoute<any, any>[],
 ): ControllerRoute<any, any> | null {
   for (const route of routes) {
@@ -214,35 +225,29 @@ function findRouteHandler(
   return null;
 }
 
-async function handleRequest<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
-  route: ControllerRoute<Req, Res>,
-  config: RouteControllerConfig,
-  context: HttpContext<any, Req, Res>,
-) {
-  const result = await route.handler(context);
-
+async function sendResponse<Res extends NextApiResponse>(response: Res, config: RouteControllerConfig, value: unknown) {
   // A response was already written
-  if (context.response.writableEnded) {
+  if (response.writableEnded) {
     return;
   }
 
-  if (result === null) {
-    return context.response.status(config.statusCodeOnNull).end();
+  if (value === null) {
+    return response.status(config.statusCodeOnNull).end();
   }
 
-  if (result === undefined) {
-    return context.response.status(config.statusCodeOnUndefined).end();
+  if (value === undefined) {
+    return response.status(config.statusCodeOnUndefined).end();
   }
 
-  if (result instanceof Results) {
-    return await result.resolve(context.response);
+  if (value instanceof Results) {
+    return await value.resolve(response);
   }
 
-  if (typeof result === 'object' || Array.isArray(result)) {
-    return context.response.json(result);
+  if (typeof value === 'object' || Array.isArray(value)) {
+    return response.json(value);
   }
 
-  return context.response.send(result);
+  return response.send(value);
 }
 
 function defaultOnError<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
