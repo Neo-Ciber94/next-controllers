@@ -5,5 +5,5 @@ module.exports = {
   webpack: (config) => {
     config.resolve.fallback = { __dirname: false };
     return config;
-  }
-}
+  },
+};

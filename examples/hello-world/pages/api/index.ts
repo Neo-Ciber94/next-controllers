@@ -15,5 +15,5 @@ class HelloController {
   }
 }
 
-// This will create a function that will handle the request using the `HelloController`
+// This will create a function that will handle the requests using the `HelloController`
 export default withController(HelloController);
