@@ -30,10 +30,9 @@ so you should disable the `webpack` behaviour in `next.config.js` to avoid confl
     }
     ```
 
-2. Enable decorators in your `typescript` project:
+2. Enable decorators in your `tsconfig.ts` project:
 
     ```json
-    // tsconfig.ts
     {
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true
