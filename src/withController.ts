@@ -29,13 +29,13 @@ interface ControllerRoute<Req, Res> {
 export interface WithControllerOptions {
   /**
    * Current path of this route, this value should be set to nodejs `__dirname`.
-   * 
+   *
    * @example
    * ```ts
    * import { withController } from 'next-controllers'
-   * 
+   *
    * class MyController {}
-   * 
+   *
    * export default withController(MyController, { dirname: __dirname })
    * ```
    */
@@ -52,10 +52,6 @@ export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
 >(target: ObjectType<any>, options: WithControllerOptions = {}) {
-  if (!options.dirname) {
-    assertIsValidApiFileName();
-  }
-
   const basePath = getBasePath(options.dirname);
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
@@ -104,6 +100,7 @@ export function withController<
 
   // Returns a handler to the request
   return async function (req: Req, res: Res) {
+    console.log('ON REQUEST: ', req.url);
     // Initialize `HttpContext` state
     if (typeof stateOrPromise === 'function') {
       contextState = await stateOrPromise();
@@ -114,6 +111,7 @@ export function withController<
     let url = req.url || '/';
 
     if (!url.startsWith(basePath)) {
+      console.log('Not match: ', basePath);
       return;
     }
 
@@ -259,33 +257,19 @@ function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends N
 
 function getBasePath(dirname?: string) {
   dirname ??= getDirName();
-  const dirSegments = dirname.split(path.sep);
+  const segments = dirname.split(path.sep);
+  const apiIdx = segments.indexOf('api');
 
-  console.log("DIRNAME: ", dirname);
-  const idx = dirSegments.indexOf('api');
+  if (apiIdx === -1) {
+    // If the current file is named "index" the folder "api/" may be omitted
+    if (segments[segments.length - 1] === 'pages') {
+      return '/api';
+    }
 
-  if (idx === -1) {
-    throw new Error(`Could not find "api/" folder`);
+    throw new Error(`Can not find "api/" folder: ${dirname}`);
   }
 
-  return '/' + dirSegments.slice(idx).join('/');
-}
-
-// Check if the file is valid for an /api route.
-// This cannot capture all the routes for errors, but it should be enough for most cases.
-function assertIsValidApiFileName() {
-  const fileName = getFileName();
-  const pattern = /\[\[\.\.\.(.+)\]\]/g;
-
-  if (!pattern.test(fileName)) {
-    throw new Error(
-      `Api endpoint filename must match the pattern "[[...params]]" to capture all request but was "${fileName}"`,
-    );
-  }
-}
-
-function getFileName() {
-  return path.basename(__filename, path.extname(__filename));
+  return '/' + segments.slice(apiIdx).join('/');
 }
 
 function getDirName(): string {
