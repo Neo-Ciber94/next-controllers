@@ -88,6 +88,7 @@ export function withController<
 
     // prettier-ignore
     const method = controller[action.methodName] as Handler<Req, Res>;
+    // eslint-disable-next-line no-console
     console.assert(method != null, `Method ${action.methodName} not found`);
 
     controllerRoutes.push({
@@ -100,7 +101,6 @@ export function withController<
 
   // Returns a handler to the request
   return async function (req: Req, res: Res) {
-    console.log('ON REQUEST: ', req.url);
     // Initialize `HttpContext` state
     if (typeof stateOrPromise === 'function') {
       contextState = await stateOrPromise();
@@ -111,7 +111,6 @@ export function withController<
     let url = req.url || '/';
 
     if (!url.startsWith(basePath)) {
-      console.log('Not match: ', basePath);
       return;
     }
 
@@ -247,6 +246,7 @@ function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends N
   { response }: HttpContext<any, Req, Res>,
   next: NextHandler,
 ) {
+  // eslint-disable-next-line no-console
   console.error(err);
 
   response.status(500).json({

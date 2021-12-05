@@ -13,7 +13,7 @@ export type NextApiContext<
 /**
  * Represents an object type that can be instantiate.
  */
-export type ObjectType<T> = Function & { new (...args: any[]): T };
+export type ObjectType<T> = { new (...args: any[]): T };
 
 /**
  * Represents a route handler.
