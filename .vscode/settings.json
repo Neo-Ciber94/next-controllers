@@ -1,0 +1,9 @@
+{
+    "exportall.config.folderListener": [
+        "/src/utils",
+        "/src/core",
+        "/src/common",
+        "/src/decorators",
+        "/src",
+    ]
+}

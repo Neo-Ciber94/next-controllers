@@ -1,4 +1,5 @@
 import { NextApiResponse } from 'next';
+import getCallsites from './utils/callsite';
 import path from 'path';
 import {
   ErrorHandler,
@@ -276,7 +277,8 @@ function getFileName() {
 function getDirName() {
   // return path.dirname(__filename);
 
-  const fileName = getCallerFile(1);
+  const callsites = getCallsites();
+  const fileName = callsites[2].getFileName();
   console.log('FILENAME: ', fileName);
 
   if (!fileName) {
