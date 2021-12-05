@@ -261,6 +261,7 @@ function getBasePath(dirname?: string) {
   dirname ??= getDirName();
   const dirSegments = dirname.split(path.sep);
 
+  console.log("DIRNAME: ", dirname);
   const idx = dirSegments.indexOf('api');
 
   if (idx === -1) {
@@ -288,5 +289,5 @@ function getFileName() {
 }
 
 function getDirName(): string {
-  return path.dirname(__filename);
+  return __dirname;
 }
