@@ -1,4 +1,4 @@
-import { Get, NextApiContext, Post, RouteController, withController } from 'next-controllers';
+import { Get, NextApiContext, RouteController, withController } from 'next-controllers';
 
 @RouteController() // This decorator its optional
 class HelloController {
