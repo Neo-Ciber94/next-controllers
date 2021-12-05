@@ -1,5 +1,4 @@
 import { NextApiResponse } from 'next';
-import getCallsites from './utils/callsite';
 import path from 'path';
 import {
   ErrorHandler,
@@ -12,11 +11,10 @@ import {
   Middleware,
   DEFAULT_CONTROLLER_CONFIG,
   RouteControllerConfig,
-  Results,
   HttpContext,
   RoutePath,
-  HTTP_STATUS_CODES,
 } from '.';
+import { HTTP_STATUS_CODES, Results } from './utils';
 
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
@@ -26,7 +24,7 @@ interface ControllerRoute<Req, Res> {
 }
 
 interface WithControllerOptions {
-  basePath?: string;
+  dirname?: string;
 }
 
 /**
@@ -39,9 +37,11 @@ export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
 >(target: ObjectType<any>, options: WithControllerOptions = {}) {
-  assertIsValidApiFileName();
+  if (!options.dirname) {
+    assertIsValidApiFileName();
+  }
 
-  const basePath = options.basePath || getBasePath();
+  const basePath = getBasePath(options.dirname);
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
   const metadataStore = getMetadataStorage();
@@ -242,16 +242,17 @@ function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends N
   next();
 }
 
-function getBasePath() {
-  const dirname = getDirName().split(path.sep);
+function getBasePath(dirname?: string) {
+  dirname ??= getDirName();
+  const dirSegments = dirname.split(path.sep);
 
-  const idx = dirname.indexOf('api');
+  const idx = dirSegments.indexOf('api');
 
   if (idx === -1) {
     throw new Error(`Could not find "api/" folder`);
   }
 
-  return '/' + dirname.slice(idx).join('/');
+  return '/' + dirSegments.slice(idx).join('/');
 }
 
 // Check if the file is valid for an /api route.
@@ -268,36 +269,9 @@ function assertIsValidApiFileName() {
 }
 
 function getFileName() {
-  // return path.basename(__filename, path.extname(__filename));
-
-  const dirname = getDirName();
-  return path.basename(dirname, path.extname(dirname));
+  return path.basename(__filename, path.extname(__filename));
 }
 
-function getDirName() {
-  // return path.dirname(__filename);
-
-  const callsites = getCallsites();
-  const fileName = callsites[2].getFileName();
-  console.log('FILENAME: ', fileName);
-
-  if (!fileName) {
-    throw new Error('Could not find current directory name');
-  }
-
-  return fileName;
-}
-
-function getCallerFile(depth: number = 1): any {
-  const prepareStackTraceOrg = Error.prepareStackTrace;
-  const err = new Error();
-
-  Error.prepareStackTrace = (_, stack) => stack;
-
-  const stack = err.stack as any;
-  console.log('Stack: ', stack[depth]);
-
-  Error.prepareStackTrace = prepareStackTraceOrg;
-
-  return stack[depth].getFileName();
+function getDirName(): string {
+  return path.dirname(__filename);
 }

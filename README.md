@@ -18,33 +18,46 @@ yarn add next-controllers
 
 ## Setup
 
-Enable decorators in your `typescript` project:
+1. `next-controllers` make use of `__dirname` to detect the route of the endpoint,
+so you should disable the `webpack` behaviour in `next.config.js` to avoid conflicts.
 
-```json
-{
-  "experimentalDecorators": true,
-  "emitDecoratorMetadata": true
-}
-```
+    ```js
+    // next.config.js
+    webpack5: true,
+    webpack: (config) => {
+      config.resolve.fallback = { __dirname: false };
+      return config;
+    }
+    ```
 
-Add a `.babelrc` file with the following content:
+2. Enable decorators in your `typescript` project:
 
-```json
-{
-  "presets": ["next/babel"],
-  "plugins": [["@babel/plugin-proposal-decorators", { "legacy": true }], "@babel/plugin-proposal-class-properties"]
-}
-```
+    ```json
+    // tsconfig.ts
+    {
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true
+    }
+    ```
 
-Install the `babel` dependencies
+3. Add or modify a `.babelrc` file with the following content:
 
-```codecopy
-npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators
-```
+    ```json
+    {
+      "presets": ["next/babel"],
+      "plugins": [["@babel/plugin-proposal-decorators", { "legacy": true }], "@babel/plugin-proposal-class-properties"]
+    }
+    ```
+
+4. Install the `babel` dependencies
+
+    ```codecopy
+    npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators
+    ```
 
 ## Usage
 
-Create a file under `pages/api` with the pattern: ``[[...params]]`` 
+Create a file under `pages/api` with the pattern: `[[...params]]`
 to allow catch all the request.
 
 Define the controller on the route.
