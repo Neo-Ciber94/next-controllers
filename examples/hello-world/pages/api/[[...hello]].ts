@@ -16,5 +16,4 @@ class HelloController {
 }
 
 // This will create a function that will handle the request using the `HelloController`
-console.log(__dirname)
 export default withController(HelloController);
