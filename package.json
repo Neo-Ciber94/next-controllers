@@ -1,7 +1,7 @@
 {
   "name": "next-controllers",
   "description": "An api for create routing controllers in nextjs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
