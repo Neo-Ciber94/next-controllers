@@ -12,7 +12,7 @@ This error occurs when ``__dirname`` is not pointing to the correct directory wh
 
 ### Solutions:
 
-1. In `next.config/js` updates your webpack configuration to use the nodejs behaviour of ``__dirname`` changing the `resolve.fallback`.
+1. In `next.config.js` update your webpack configuration to use the nodejs behaviour of ``__dirname`` changing the `resolve.fallback`.
 
     ```js
     module.exports = {
@@ -26,7 +26,7 @@ This error occurs when ``__dirname`` is not pointing to the correct directory wh
 
     ```
 
-2. In `next.config/js` updates your webpack configuration to use the nodejs behaviour of ``__dirname`` changing the `node` config.
+2. In `next.config.js` update your webpack configuration to use the nodejs behaviour of ``__dirname`` changing the `node` config.
 
     ```js
     module.exports = {
