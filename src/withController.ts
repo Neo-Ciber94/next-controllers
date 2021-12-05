@@ -23,7 +23,22 @@ interface ControllerRoute<Req, Res> {
   middlewares: Middleware<Req, Res>[];
 }
 
-interface WithControllerOptions {
+/**
+ * Configuration for `withController`
+ */
+export interface WithControllerOptions {
+  /**
+   * Current path of this route, this value should be set to nodejs `__dirname`.
+   * 
+   * @example
+   * ```ts
+   * import { withController } from 'next-controllers'
+   * 
+   * class MyController {}
+   * 
+   * export default withController(MyController, { dirname: __dirname })
+   * ```
+   */
   dirname?: string;
 }
 
