@@ -16,6 +16,8 @@ import {
 } from '.';
 import { HTTP_STATUS_CODES, Results } from './utils';
 
+type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
+
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
   method: ActionType;
@@ -71,8 +73,12 @@ export function withController<
   const errorHandlerMetadata = metadataStore.getErrorHandler(target);
   const errorHandler = errorHandlerMetadata ? controller[errorHandlerMetadata.methodName] : null;
 
+  const onNoMatchMetadata = metadataStore.getNoMatchHandler(target);
+  const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
+
   // prettier-ignore
-  const onError = (errorHandler?.bind(controller) ?? defaultErrorHandler) as ErrorHandler<Req, Res>;
+  const onError = (errorHandler?.bind(controller) ?? defaultOnError) as ErrorHandler<Req, Res>;
+  const onNoMatch = (noMatchHandler?.bind(controller) ?? defaultOnNoMatch) as NoReturnHandler<Req, Res>;
 
   // Register all the routes of this controller
   for (const action of actions) {
@@ -108,18 +114,16 @@ export function withController<
       contextState = await stateOrPromise;
     }
 
-    let url = req.url || '/';
+    // HttpContext for the current request
+    const httpContext = new HttpContext(contextState, req, res);
+    const requestUrl = req.url || '/';
 
-    if (!url.startsWith(basePath)) {
-      return;
+    if (!requestUrl.startsWith(basePath)) {
+      return onNoMatch(httpContext);
     }
 
     // Slice the base path
-    url = url.slice(basePath.length);
-
-    // HttpContext for the current request
-    const httpContext = new HttpContext(contextState, req, res);
-
+    const url = requestUrl.slice(basePath.length);
     let done = false;
     let hasError = false;
 
@@ -185,7 +189,7 @@ export function withController<
     }
 
     // Not found
-    return res.status(404).end();
+    return onNoMatch(httpContext);
   };
 }
 
@@ -241,7 +245,7 @@ async function handleRequest<Req extends NextApiRequestWithParams, Res extends N
   return context.response.send(result);
 }
 
-function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
+function defaultOnError<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
   err: any,
   { response }: HttpContext<any, Req, Res>,
   next: NextHandler,
@@ -253,6 +257,14 @@ function defaultErrorHandler<Req extends NextApiRequestWithParams, Res extends N
     message: err.message || HTTP_STATUS_CODES[500],
   });
   next();
+}
+
+function defaultOnNoMatch<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
+  context: HttpContext<any, Req, Res>,
+) {
+  context.response.status(404).json({
+    message: HTTP_STATUS_CODES[404],
+  });
 }
 
 function getBasePath(dirname?: string) {

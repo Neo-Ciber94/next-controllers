@@ -19,6 +19,11 @@ interface ControllerErrorHandlerMetadata {
   methodName: string;
 }
 
+interface ControllerNoMatchHandlerMetadata {
+  target: ObjectType<any>;
+  methodName: string;
+}
+
 interface ControllerMiddlewareMetadata {
   target: ObjectType<any>;
   methodName?: string;
@@ -42,6 +47,9 @@ class ControllerMetadataStorage {
 
   // prettier-ignore
   private readonly errorHandlers = new Map<ObjectType<any>, ControllerErrorHandlerMetadata>();
+
+  // prettier-ignore
+  private readonly noMatchHandlers = new Map<ObjectType<any>, ControllerNoMatchHandlerMetadata>();
 
   // prettier-ignore
   private readonly middlewaresMetadata = new Map<ObjectType<any>, ControllerMiddlewareMetadata[]>();
@@ -72,6 +80,10 @@ class ControllerMetadataStorage {
 
   addErrorHandler(errorHandler: ControllerErrorHandlerMetadata) {
     this.errorHandlers.set(errorHandler.target, errorHandler);
+  }
+
+  addNoMatchHandler(noMatchHandler: ControllerNoMatchHandlerMetadata) {
+    this.noMatchHandlers.set(noMatchHandler.target, noMatchHandler);
   }
 
   addMiddleware(middleware: ControllerMiddlewareMetadata) {
@@ -123,7 +135,6 @@ class ControllerMetadataStorage {
     return result;
   }
 
-  // prettier-ignore
   getErrorHandler(type: ObjectType<any>): ControllerErrorHandlerMetadata | undefined {
     const result = this.errorHandlers.get(type);
 
@@ -133,6 +144,22 @@ class ControllerMetadataStorage {
       for (const [target, errorHandler] of errorHandlers) {
         if (type.prototype instanceof target) {
           return errorHandler;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  getNoMatchHandler(type: ObjectType<any>): ControllerNoMatchHandlerMetadata | undefined {
+    const result = this.noMatchHandlers.get(type);
+
+    if (!result) {
+      const noMatchHandlers = Array.from(this.noMatchHandlers.entries());
+
+      for (const [target, noMatchHandler] of noMatchHandlers) {
+        if (type.prototype instanceof target) {
+          return noMatchHandler;
         }
       }
     }
