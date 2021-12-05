@@ -2,9 +2,9 @@
 
 ## Table of contents
 
-1. [Can not find "api/" folder](#cannot-find-api-folder)
+1. [Error: Can not find "api/" folder](#cannot-find-api-folder)
 
-## Can not find "api/" folder
+## Error: Can not find "api/" folder
 
 ### Causes:
 
