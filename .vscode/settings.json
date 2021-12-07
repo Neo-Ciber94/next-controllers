@@ -4,7 +4,6 @@
         "/src/core",
         "/src/common",
         "/src/decorators",
-        "/src",
     ],
     "exportall.config.relExclusion": [
         "/src/utils"

@@ -2,12 +2,16 @@
 module.exports = {
   reactStrictMode: true,
   webpack5: true,
-  webpack: (config) => {
-    config.target = 'node';
-    config.node = {
-      ...config.node,
-      __dirname: true,
-    };
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.fallback = { __dirname: false };
+
+      // config.target = 'node';
+      // config.node = {
+      //   __dirname: true,
+      // };
+    }
+
     return config;
   },
 };

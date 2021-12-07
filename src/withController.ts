@@ -14,7 +14,7 @@ import {
   HttpContext,
   RoutePath,
 } from '.';
-import { HTTP_STATUS_CODES, Results } from './utils';
+import { getFrames, getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
 type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
 
@@ -151,7 +151,7 @@ export function withController<
     // Run the middlewares
     async function runMiddlewares(middlewares: Middleware<Req, Res>[]) {
       for (const middleware of middlewares) {
-        await middleware(req, res, next);
+        await middleware(req, res, next); // TODO: handle middlewares that takes 4 arguments like express
 
         if (!done) {
           return false;
@@ -290,5 +290,9 @@ function getBasePath(dirname?: string) {
 }
 
 function getDirName(): string {
-  return __dirname;
+  // return _dirname; // FIXME: This should be returned but is returning the node_module
+
+  const frame = getStackFrame(1);
+  const dirname = path.dirname(frame.file || '');
+  return dirname;
 }

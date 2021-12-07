@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "stripInternal": true,
     "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
