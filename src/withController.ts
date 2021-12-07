@@ -14,9 +14,11 @@ import {
   HttpContext,
   RoutePath,
 } from '.';
-import { getFrames, getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
+import { getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
 type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
+
+type NextControllerApiHandler<Req, Res> = (req: Req, res: Res) => Promise<any>;
 
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
@@ -45,16 +47,35 @@ export interface WithControllerOptions {
 }
 
 /**
- * Creates a function from the given controller that handles the requests for this route.
- *
- * @param target The target type to create the route controller.
- * @returns A controller for this route.
+ * Creates a request handler using the specified controller.
+ * @param target The controller class to use.
+ * @param basePath The base path of the controller, the route path will resolve to: `/api/${basePath}`.
  */
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, options: WithControllerOptions = {}) {
-  const basePath = getBasePath(options.dirname);
+>(target: ObjectType<any>, basePath?: string): NextControllerApiHandler<Req, Res>;
+
+/**
+ * Creates a request handler using the specified controller.
+ * @param target The controller class to use.
+ * @param options Configuration options for the controller.
+ */
+export function withController<
+  Req extends NextApiRequestWithParams = NextApiRequestWithParams,
+  Res extends NextApiResponse = NextApiResponse,
+>(target: ObjectType<any>, options: WithControllerOptions): NextControllerApiHandler<Req, Res>;
+
+/**
+ * Creates a request handler using the specified controller.
+ * @param target The controller class to use.
+ * @param options Either the configuration options for the controller or the base path.
+ */
+export function withController<
+  Req extends NextApiRequestWithParams = NextApiRequestWithParams,
+  Res extends NextApiResponse = NextApiResponse,
+>(target: ObjectType<any>, options?: string | WithControllerOptions): NextControllerApiHandler<Req, Res> {
+  const basePath = getBasePath(options);
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
   const metadataStore = getMetadataStorage();
@@ -272,8 +293,14 @@ function defaultOnNoMatch<Req extends NextApiRequestWithParams, Res extends Next
   });
 }
 
-function getBasePath(dirname?: string) {
-  dirname ??= getDirName();
+function getBasePath(options?: string | WithControllerOptions) {
+  options = options || {};
+
+  if (typeof options === 'string') {
+    return `/api/${options}`;
+  }
+
+  const dirname = options.dirname || getDirName();
   const segments = dirname.split(path.sep);
   const apiIdx = segments.indexOf('api');
 
