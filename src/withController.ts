@@ -320,20 +320,20 @@ function getDirName(): string {
   return dirname;
 }
 
-type Result = boolean | { error: any };
-
 /// This returns `true` if can continue and `false` or an error if cannot continue.
 async function runMiddlewares<Req, Res>(
   error: any,
   req: Req,
   res: Res,
   middlewares: MiddlewareHandler<any, any>[],
-): Promise<Result> {
+): Promise<boolean | { error: any }> {
+  // If there is no middlewares, continue
   if (middlewares.length === 0) {
     return true;
   }
 
   let index = 0;
+
   const next = (err?: any) => {
     error = err;
     index += 1;
