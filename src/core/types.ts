@@ -31,16 +31,19 @@ export type NextHandler = (err?: any) => void;
 export type ErrorHandler<Req, Res> = (err: any, context: HttpContext<any, Req, Res>) => Promise<any> | any;
 
 /**
- * A handle for middlewares that takes an error.
- *
- * This form of middlewares are used by `expressjs`.
+ * A route middleware that takes an error, request and response.
  */
 export type ErrorMiddleware<Req, Res> = (error: any, req: Req, res: Res, next: NextHandler) => Promise<void> | void;
 
 /**
- * A handler for middlewares.
+ * A route middleware that takes the request and response.
  */
 export type Middleware<Req, Res> = (req: Req, res: Res, next: NextHandler) => Promise<void> | void;
+
+/**
+ * Represents a middleware.
+ */
+export type MiddlewareHandler<Req, Res> = ErrorMiddleware<Req, Res> | Middleware<Req, Res>;
 
 /**
  * Params object.
