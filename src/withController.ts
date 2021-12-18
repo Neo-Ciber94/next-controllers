@@ -25,7 +25,7 @@ interface ControllerRoute<Req, Res> {
   path: RoutePath;
   method: ActionType;
   handler: Handler<Req, Res>;
-  middlewares: Middleware<Req, Res>[];
+  middlewares: MiddlewareHandler<Req, Res>[];
 }
 
 /**
@@ -156,47 +156,53 @@ export function withController<
 
     // Slice the base path
     const url = requestUrl.slice(basePath.length);
-    let done = false;
-    let hasError = false;
 
-    // The next action handler
-    const next = (err?: any) => {
-      done = true;
-
-      // Check if there was an error to avoid overflow
-      if (!hasError && err) {
-        hasError = true;
-        return onError(err, httpContext);
-      }
-    };
-
-    // Run the middlewares
-    async function runMiddlewares(middlewares: Middleware<Req, Res>[]) {
-      for (const middleware of middlewares) {
-        await middleware(req, res, next); // TODO: handle middlewares that takes 4 arguments like express
-
-        if (!done) {
-          return false;
-        }
-      }
-
-      // Reset the state
-      done = false;
-      return true;
-    }
+    // An error capture by the controller
+    let error: any;
 
     // Inject the context
     for (const context of httpContextMetadata) {
       controller[context.propertyName] = httpContext;
     }
 
-    try {
-      // Run all the middlewares of this controller
-      if (!(await runMiddlewares(controllerMiddlewares))) {
-        return;
+    // Run all the middlewares of this controller
+    const result = await runMiddlewares(undefined, req, res, controllerMiddlewares);
+
+    if (typeof result !== 'boolean') {
+      error = result.error;
+    }
+
+    // The middleware did not continue or the response was already written
+    if (result === false || res.writableEnded) {
+      return;
+    }
+
+    // Only continue to the route if there is no errors
+    if (error != null) {
+      // Finds the route this request is going to
+      const route = findRoute(url, req, controllerRoutes);
+
+      if (route) {
+        try {
+          // Run this route middlewares
+          const middlewareResult = await runMiddlewares(undefined, req, res, controllerMiddlewares);
+
+          if (typeof middlewareResult !== 'boolean') {
+            error = middlewareResult.error;
+          }
+
+          // The middleware did not continue or the response was already written
+          if (middlewareResult === false || res.writableEnded) {
+            return;
+          }
+
+          // Get and returns the route response
+          const result = await route.handler(httpContext);
+          return await sendResponse(httpContext.response, controllerConfig, result);
+        } catch (e) {
+          error = e;
+        }
       }
-    } catch (err: any) {
-      return next(err);
     }
 
     // A response was already written
@@ -204,21 +210,10 @@ export function withController<
       return;
     }
 
-    // Finds the route this request is going to
-    const route = findRoute(url, req, controllerRoutes);
-
-    if (route) {
-      try {
-        // Run this route middlewares
-        if (!(await runMiddlewares(route.middlewares))) {
-          return;
-        }
-
-        const result = await route.handler(httpContext);
-        return await sendResponse(httpContext.response, controllerConfig, result);
-      } catch (err: any) {
-        return next(err);
-      }
+    if (error) {
+      // Handle the error
+      const errorResult = await onError(error, httpContext);
+      return await sendResponse(httpContext.response, controllerConfig, errorResult);
     }
 
     // Not found

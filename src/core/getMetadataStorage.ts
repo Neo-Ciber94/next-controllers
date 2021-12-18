@@ -1,4 +1,4 @@
-import { Middleware, ObjectType } from './types';
+import { MiddlewareHandler, ObjectType } from './types';
 import { ActionType } from './ActionType';
 import { RouteControllerConfig } from '..';
 
@@ -27,7 +27,7 @@ interface ControllerNoMatchHandlerMetadata {
 interface ControllerMiddlewareMetadata {
   target: ObjectType<any>;
   methodName?: string;
-  handler: Middleware<any, any>;
+  handler: MiddlewareHandler<any, any>;
 }
 
 interface ControllerHttpContextMetadata {
