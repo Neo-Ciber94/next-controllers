@@ -178,7 +178,7 @@ export function withController<
     }
 
     // Only continue to the route if there is no errors
-    if (error != null) {
+    if (error == null) {
       // Finds the route this request is going to
       const route = findRoute(url, req, controllerRoutes);
 
