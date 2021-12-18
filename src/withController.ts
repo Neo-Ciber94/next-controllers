@@ -13,6 +13,7 @@ import {
   RouteControllerConfig,
   HttpContext,
   RoutePath,
+  MiddlewareHandler,
 } from '.';
 import { getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
@@ -101,8 +102,8 @@ export function withController<
   const _onError = (errorHandler?.bind(controller) ?? defaultOnError) as ErrorHandler<Req, Res>;
   const _onNoMatch = (noMatchHandler?.bind(controller) ?? defaultOnNoMatch) as NoReturnHandler<Req, Res>;
 
-  const onError: ErrorHandler<Req, Res> = async (err, context, next) => {
-    const result = await _onError(err, context, next);
+  const onError: ErrorHandler<Req, Res> = async (err, context) => {
+    const result = await _onError(err, context);
     return await sendResponse(context.response, controllerConfig, result);
   };
 
@@ -165,7 +166,7 @@ export function withController<
       // Check if there was an error to avoid overflow
       if (!hasError && err) {
         hasError = true;
-        return onError(err, httpContext, next);
+        return onError(err, httpContext);
       }
     };
 
@@ -322,4 +323,57 @@ function getDirName(): string {
   const frame = getStackFrame(1);
   const dirname = path.dirname(frame.file || '');
   return dirname;
+}
+
+type Result = boolean | { error: any };
+
+/// This returns `true` if can continue and `false` or an error if cannot continue.
+async function runMiddlewares<Req, Res>(
+  error: any,
+  req: Req,
+  res: Res,
+  middlewares: MiddlewareHandler<any, any>[],
+): Promise<Result> {
+  if (middlewares.length === 0) {
+    return true;
+  }
+
+  let index = 0;
+  const next = (err?: any) => {
+    error = err;
+    index += 1;
+  };
+
+  while (index < middlewares.length) {
+    const middleware = middlewares[index];
+    const lastIndex = index;
+
+    try {
+      if (error) {
+        if (middleware.length === 4) {
+          await middleware(error, req, res, next);
+        }
+      } else {
+        if (middleware.length === 4) {
+          await middleware(error, req, res, next);
+        } else {
+          await (middleware as Middleware<any, any>)(req, res, next);
+        }
+      }
+    } catch (err) {
+      // Sets the error
+      next(err);
+    }
+
+    // Next was not called
+    if (lastIndex === index) {
+      return false;
+    }
+  }
+
+  if (error != null) {
+    return { error };
+  }
+
+  return true;
 }
