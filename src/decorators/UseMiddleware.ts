@@ -4,7 +4,6 @@ import { getMetadataStorage, Middleware } from '..';
  * Register a middleware or collection of middlewares for a given route or controller.
  * @param middlewares The middlewares to register.
  */
-
 export function UseMiddleware<Req, Res>(...middlewares: Middleware<Req, Res>[]) {
   return function (target: any, methodName?: string) {
     middlewares.forEach((handler) => {
