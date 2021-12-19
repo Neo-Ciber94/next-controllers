@@ -1,3 +1,4 @@
+import { OnErrorHandler } from 'src/interfaces/error-handler';
 import { getMetadataStorage, ObjectType, ValueOrPromise } from '..';
 
 export const DEFAULT_CONTROLLER_CONFIG: RouteControllerConfig = Object.freeze({
@@ -24,6 +25,12 @@ export interface RouteControllerConfig<T = any> {
    * Initial state of the `HttpContext` for this controller.
    */
   state: ValueOrPromise<T>;
+
+  /**
+   * An error handler for the controller.
+   * This can be used instead of the `OnError` decorator.
+   */
+  onError?: OnErrorHandler;
 }
 
 /**

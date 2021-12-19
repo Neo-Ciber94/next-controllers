@@ -87,6 +87,7 @@ export function withController<
   // prettier-ignore
   const controllerConfig = metadataStore.getController(target)?.config || DEFAULT_CONTROLLER_CONFIG;
   const httpContextMetadata = metadataStore.getContext(target);
+  const controllerOnError = controllerConfig.onError;
   const stateOrPromise = controllerConfig.state || {};
   let contextState: any = controllerConfig.state || {};
 
@@ -99,8 +100,8 @@ export function withController<
   const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
 
   // prettier-ignore
-  const _onError = (errorHandler?.bind(controller) ?? defaultOnError) as ErrorHandler<Req, Res>;
-  const _onNoMatch = (noMatchHandler?.bind(controller) ?? defaultOnNoMatch) as NoReturnHandler<Req, Res>;
+  const _onError = (controllerOnError || errorHandler?.bind(controller) || defaultOnError) as ErrorHandler<Req, Res>;
+  const _onNoMatch = (noMatchHandler?.bind(controller) || defaultOnNoMatch) as NoReturnHandler<Req, Res>;
 
   const onError: ErrorHandler<Req, Res> = async (err, context) => {
     const result = await _onError(err, context);
@@ -327,19 +328,17 @@ async function runMiddlewares<Req, Res>(
   res: Res,
   middlewares: MiddlewareHandler<any, any>[],
 ): Promise<boolean | { error: any }> {
-  // If there is no middlewares, continue
+  // If there is no middlewares, exit
   if (middlewares.length === 0) {
     return true;
   }
 
-  let index = 0;
+  let index = -1;
 
-  const next = (err?: any) => {
+  const next = async (err?: any) => {
     error = err;
     index += 1;
-  };
 
-  while (index < middlewares.length) {
     const middleware = middlewares[index];
     const lastIndex = index;
 
@@ -357,13 +356,20 @@ async function runMiddlewares<Req, Res>(
       }
     } catch (err) {
       // Sets the error
-      next(err);
+      await next(err);
     }
 
     // Next was not called
     if (lastIndex === index) {
       return false;
     }
+
+    return true;
+  };
+
+  // Calls the middlewares recursively
+  if (await next() === false) {
+    return false;
   }
 
   if (error != null) {
