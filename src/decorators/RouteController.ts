@@ -1,5 +1,5 @@
-import { OnErrorHandler } from 'src/interfaces/error-handler';
-import { getMetadataStorage, ObjectType, ValueOrPromise } from '..';
+import { ErrorHandlerInterface } from 'src/interfaces/error-handler';
+import { ErrorHandler, getMetadataStorage, ObjectType, ValueOrPromise } from '..';
 
 export const DEFAULT_CONTROLLER_CONFIG: RouteControllerConfig = Object.freeze({
   statusCodeOnNull: 404,
@@ -30,7 +30,7 @@ export interface RouteControllerConfig<T = any> {
    * An error handler for the controller.
    * This can be used instead of the `OnError` decorator.
    */
-  onError?: OnErrorHandler;
+  onError?: ErrorHandlerInterface | ErrorHandler<any, any>
 }
 
 /**

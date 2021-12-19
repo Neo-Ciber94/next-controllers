@@ -15,6 +15,7 @@ import {
   RoutePath,
   MiddlewareHandler,
 } from '.';
+import { ErrorHandlerInterface } from './interfaces/error-handler';
 import { getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
 type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
@@ -87,7 +88,6 @@ export function withController<
   // prettier-ignore
   const controllerConfig = metadataStore.getController(target)?.config || DEFAULT_CONTROLLER_CONFIG;
   const httpContextMetadata = metadataStore.getContext(target);
-  const controllerOnError = controllerConfig.onError;
   const stateOrPromise = controllerConfig.state || {};
   let contextState: any = controllerConfig.state || {};
 
@@ -98,6 +98,17 @@ export function withController<
 
   const onNoMatchMetadata = metadataStore.getNoMatchHandler(target);
   const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
+
+  // Error handler for the controller
+  let controllerOnError: ErrorHandler<Req, Res> | undefined;
+
+  if (controllerConfig.onError) {
+    if (typeof controllerConfig.onError === 'function') {
+      controllerOnError = controllerConfig.onError;
+    } else {
+      controllerOnError = (controllerConfig.onError as ErrorHandlerInterface<any, Req, Res>).onError;
+    }
+  }
 
   // prettier-ignore
   const _onError = (controllerOnError || errorHandler?.bind(controller) || defaultOnError) as ErrorHandler<Req, Res>;
@@ -368,7 +379,7 @@ async function runMiddlewares<Req, Res>(
   };
 
   // Calls the middlewares recursively
-  if (await next() === false) {
+  if ((await next()) === false) {
     return false;
   }
 
