@@ -1,6 +1,8 @@
 import { UserRepository } from 'lib/repositories/user.repository';
-import { Delete, Get, NextApiContext, Post, Put, withController } from 'next-controllers';
+import morgan from 'morgan';
+import { Delete, Get, NextApiContext, Post, Put, UseMiddleware, withController } from 'next-controllers';
 
+@UseMiddleware(morgan('dev'))
 class UserController {
   private readonly userRepository = new UserRepository();
 
