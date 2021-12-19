@@ -347,13 +347,14 @@ async function runMiddlewares<Req, Res>(
   let index = -1;
 
   const next = async (err?: any) => {
+    index += 1;
+    
     if (index > middlewares.length) {
       return true;
     }
 
     // Sets the error if any
     error = err;
-    index += 1;
 
     // Gets the next middleware
     const middleware = middlewares[index];
