@@ -5,7 +5,7 @@ class HelloController {
   // GET /api/hello
   @Get()
   sayHello() {
-    return 'Hello World';
+    return 'Hello World!';
   }
 
   // GET /api/hello/:name
