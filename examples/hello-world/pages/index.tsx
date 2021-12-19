@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import styles from '../styles/Home.module.css';
 
 const API_URL = 'http://localhost:3000/api';
