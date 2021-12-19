@@ -2,6 +2,5 @@
 node_modules/
 
 # typescript
-dist/
-lib/
+build/
 *.tsbuildinfo

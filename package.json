@@ -3,10 +3,10 @@
   "description": "An api for create routing controllers in nextjs",
   "version": "0.1.9",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "files": [
-    "lib/**/*"
+    "build/**/*"
   ],
   "keywords": [
     "nextjs",
