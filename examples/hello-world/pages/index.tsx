@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from '../styles/Home.module.css';
 
 const API_URL = 'http://localhost:3000/api';
@@ -8,6 +8,7 @@ const Home: NextPage = () => {
   const [name, setName] = useState<string>('');
   const url = `${API_URL}/${encodeURIComponent(name.trim())}`;
   const { data, isLoading, error, refetch, isRefetching } = useFetch<string>(url, {
+    delay: 1000,
     transform: async (res) => {
       const text = await res.text();
       return decodeURIComponent(text);
@@ -15,12 +16,23 @@ const Home: NextPage = () => {
   });
 
   if (isLoading && !isRefetching) {
-    return <div>Loading...</div>;
+    return (
+      <div
+        className="loader"
+        style={{
+          width: '100%',
+          height: '80%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      ></div>
+    );
   }
 
   if (error) {
     const message = error.message || error;
-    return <div style={{ color: 'red' }}>Error: {message}</div>;
+    return <div style={{ color: 'red', fontSize: '2rem' }}>Error: {message}</div>;
   }
 
   return (
@@ -58,6 +70,7 @@ export default Home;
 interface FetchConfig {
   init?: RequestInit;
   transform?: (res: Response) => Promise<any>;
+  delay?: number;
 }
 
 function useFetch<T = any>(url: string, config: FetchConfig = {}) {
@@ -65,12 +78,15 @@ function useFetch<T = any>(url: string, config: FetchConfig = {}) {
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<any>();
   const [isRefetching, setRefetching] = useState(false);
-  const [refresh, setRefresh] = useState(0);
+  const [refetchCount, setRefetchCount] = useState(0);
+
   const transform = config.transform || ((res) => res.json());
 
   const refetch = () => {
     setRefetching(true);
-    setRefresh((prev) => prev + 1);
+
+    // Force to refetch
+    setRefetchCount((count) => count + 1);
   };
 
   useEffect(() => {
@@ -78,14 +94,24 @@ function useFetch<T = any>(url: string, config: FetchConfig = {}) {
 
     fetch(url, config.init)
       .then(transform)
-      .then((data) => setData(data))
+      .then(async (data) => {
+        if (refetchCount === 0 && config.delay && config.delay > 0) {
+          await delay(config.delay);
+        }
+
+        setData(data);
+      })
       .catch((e) => setError(e))
       .finally(() => {
         setLoading(false);
         setRefetching(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh]);
+  }, [refetchCount]);
 
   return { data, isLoading, error, refetch, isRefetching };
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
