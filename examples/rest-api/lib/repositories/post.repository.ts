@@ -2,7 +2,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { Client } from 'lib/database/client';
 
 export class PostRepository {
-  private readonly client: PrismaClient = Client.connect();
+  readonly client: PrismaClient = Client.connect();
 
   find<T extends Prisma.PostFindManyArgs>(query?: Prisma.SelectSubset<T, Prisma.PostFindManyArgs>) {
     return this.client.post.findMany(query);

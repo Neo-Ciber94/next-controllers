@@ -2,7 +2,7 @@ import { User, Prisma, PrismaClient } from '@prisma/client';
 import { Client } from 'lib/database/client';
 
 export class UserRepository {
-  private readonly client: PrismaClient = Client.connect();
+  readonly client: PrismaClient = Client.connect();
 
   find<T extends Prisma.UserFindManyArgs>(query?: Prisma.SelectSubset<T, Prisma.UserFindManyArgs>) {
     return this.client.user.findMany(query);
@@ -17,6 +17,12 @@ export class UserRepository {
   findById(id: number): Promise<User | null> {
     return this.client.user.findFirst({
       where: { id },
+    });
+  }
+
+  findByEmail(email: string): Promise<User | null> {
+    return this.client.user.findUnique({
+      where: { email },
     });
   }
 
