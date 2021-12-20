@@ -8,8 +8,9 @@ class UserController {
 
   @Get()
   async getUsers({ request }: NextApiContext) {
-    if (request.params.email) {
-      const user = await this.userRepository.findByEmail(request.params.email);
+    if (request.query.email) {
+      const email = String(request.query.email);
+      const user = await this.userRepository.findByEmail(email);
       return user;
     }
 

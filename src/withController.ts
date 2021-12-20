@@ -1,4 +1,4 @@
-import { NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 import {
   ErrorHandler,
@@ -46,6 +46,12 @@ export interface WithControllerOptions {
    * ```
    */
   dirname?: string;
+
+  /**
+   * Whether to decode the query params of the request.
+   * The default is `true`.
+   */
+  decodeQueryParams?: boolean;
 }
 
 /**
@@ -84,6 +90,11 @@ export function withController<
   const actions = metadataStore.getActions(target);
   const allMiddlewares = metadataStore.getMiddlewares(target);
   const controllerMiddlewares = allMiddlewares.filter((m) => m.methodName == null).map((m) => m.handler);
+  let shouldDecodeQueryParams = false;
+
+  if (typeof options === 'object') {
+    shouldDecodeQueryParams = options.decodeQueryParams === undefined || options.decodeQueryParams === true;
+  }
 
   // prettier-ignore
   const controllerConfig = metadataStore.getController(target)?.config || DEFAULT_CONTROLLER_CONFIG;
@@ -160,7 +171,18 @@ export function withController<
 
     // HttpContext for the current request
     const httpContext = new HttpContext(contextState, req, res);
-    const requestUrl = req.url || '/';
+    let requestUrl = req.url || '/';
+
+    // Ignore the query params
+    const queryParamsIdx = requestUrl.indexOf('?');
+    if (queryParamsIdx > 0) {
+      requestUrl = requestUrl.substring(0, queryParamsIdx);
+    }
+
+    // Decode the query params
+    if (shouldDecodeQueryParams) {
+      decodeQueryParams(req);
+    }
 
     if (!requestUrl.startsWith(basePath)) {
       return onNoMatch(httpContext);
@@ -332,6 +354,18 @@ function getDirName(): string {
   return dirname;
 }
 
+function decodeQueryParams(req: NextApiRequest) {
+  if (req.query) {
+    for (const [key, value] of Object.entries(req.query)) {
+      if (typeof value === 'string') {
+        req.query[key] = decodeURIComponent(value);
+      } else if (Array.isArray(value)) {
+        req.query[key] = value.map(decodeURIComponent);
+      }
+    }
+  }
+}
+
 /// This returns `true` if can continue and `false` or an error if cannot continue.
 async function runMiddlewares<Req, Res>(
   error: any,
@@ -348,7 +382,7 @@ async function runMiddlewares<Req, Res>(
 
   const next = async (err?: any) => {
     index += 1;
-    
+
     if (index > middlewares.length) {
       return true;
     }
