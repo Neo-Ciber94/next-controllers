@@ -199,6 +199,14 @@ export function withController<
       controller[context.propertyName] = httpContext;
     }
 
+    // Finds the route this request is going to, and attach the request params
+    const route = findRoute(url, req, controllerRoutes);
+
+    // No route match
+    if (route == null) {
+      return onNoMatch(httpContext);
+    }
+
     // Run all the middlewares of this controller
     const result = await runMiddlewares(undefined, req, res, controllerMiddlewares);
 
@@ -213,29 +221,24 @@ export function withController<
 
     // Only continue to the route if there is no errors
     if (error == null) {
-      // Finds the route this request is going to
-      const route = findRoute(url, req, controllerRoutes);
+      try {
+        // Run this route middlewares
+        const middlewareResult = await runMiddlewares(undefined, req, res, route.middlewares);
 
-      if (route) {
-        try {
-          // Run this route middlewares
-          const middlewareResult = await runMiddlewares(undefined, req, res, controllerMiddlewares);
-
-          if (typeof middlewareResult !== 'boolean') {
-            error = middlewareResult.error;
-          }
-
-          // The middleware did not continue or the response was already written
-          if (middlewareResult === false || res.writableEnded) {
-            return;
-          }
-
-          // Get and returns the route response
-          const result = await route.handler(httpContext);
-          return await sendResponse(httpContext.response, controllerConfig, result);
-        } catch (e) {
-          error = e;
+        if (typeof middlewareResult !== 'boolean') {
+          error = middlewareResult.error;
         }
+
+        // The middleware did not continue or the response was already written
+        if (middlewareResult === false || res.writableEnded) {
+          return;
+        }
+
+        // Get and returns the route response
+        const result = await route.handler(httpContext);
+        return await sendResponse(httpContext.response, controllerConfig, result);
+      } catch (e) {
+        error = e;
       }
     }
 
@@ -250,7 +253,7 @@ export function withController<
       return await sendResponse(httpContext.response, controllerConfig, errorResult);
     }
 
-    // Not found
+    // Fallback
     return onNoMatch(httpContext);
   };
 }

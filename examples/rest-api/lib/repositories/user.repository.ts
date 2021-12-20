@@ -35,17 +35,11 @@ export class UserRepository {
   update(id: number, updateUser: Prisma.UserUpdateInput): Promise<User> {
     return this.client.user.update({
       data: updateUser,
-      where: {
-        id,
-      },
+      where: { id },
     });
   }
 
   delete(id: number): Promise<User> {
-    return this.client.user.delete({
-      where: {
-        id,
-      },
-    });
+    return this.client.user.delete({ where: { id } });
   }
 }
