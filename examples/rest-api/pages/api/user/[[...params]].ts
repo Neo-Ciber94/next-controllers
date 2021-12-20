@@ -1,37 +1,10 @@
+import { country } from 'lib/middlewares/country.middleware';
 import { UserRepository } from 'lib/repositories/user.repository';
 import morgan from 'morgan';
-import { NextApiResponse } from 'next';
-import {
-  Delete,
-  Get,
-  Middleware,
-  NextApiContext,
-  NextApiRequestWithParams,
-  Post,
-  Put,
-  UseMiddleware,
-  withController,
-} from 'next-controllers';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Delete, Get, NextApiContext, Post, Put, UseMiddleware, withController } from 'next-controllers';
 
-const checkIfUserExists: Middleware<NextApiRequestWithParams, NextApiResponse> = async (req, res, next) => {
-  if (req.params.id) {
-    const id = Number(req.params.id);
-    const user = await new UserRepository().findById(id);
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-  }
-
-  next();
-};
-
-const addTimeHeader: Middleware<NextApiRequestWithParams, NextApiResponse> = async (req, res, next) => {
-  // res.setHeader('X-Time', new Date().toISOString());
-  next();
-};
-
-@UseMiddleware(morgan('dev'), checkIfUserExists)
+@UseMiddleware(morgan('dev'), country())
 class UserController {
   private readonly userRepository = new UserRepository();
 
@@ -75,3 +48,7 @@ class UserController {
 }
 
 export default withController(UserController);
+// export default function handler(req: NextApiRequest, res: NextApiResponse) {
+//   res.setHeader('X-Number', 1);
+//   res.status(200).json({ message: 'Hello World!' });
+// }

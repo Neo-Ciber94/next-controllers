@@ -433,3 +433,54 @@ async function runMiddlewares<Req, Res>(
 
   return true;
 }
+
+async function runMiddlewares2<Req, Res>(
+  error: any,
+  req: Req,
+  res: Res,
+  middlewares: MiddlewareHandler<any, any>[],
+): Promise<boolean | { error: any }> {
+  // If there is no middlewares, exit
+  if (middlewares.length === 0) {
+    return true;
+  }
+
+  let done = false;
+  const next = (err?: any) => {
+    done = true;
+    error = err;
+  };
+
+  for (const middleware of middlewares) {
+    try {
+      if (error) {
+        if (middleware.length === 4) {
+          await middleware(error, req, res, next);
+        }
+      } else {
+        if (middleware.length === 4) {
+          await middleware(error, req, res, next);
+        } else {
+          await (middleware as Middleware<any, any>)(req, res, next);
+        }
+      }
+    } catch (err) {
+      // Sets the error
+      next(err);
+    }
+
+    // Next was not called
+    if (!done) {
+      return false;
+    }
+
+    // Resets the state
+    done = false;
+  }
+
+  if (error != null) {
+    return { error };
+  }
+
+  return true;
+}
