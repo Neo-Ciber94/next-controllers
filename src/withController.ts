@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import path, { resolve } from 'path';
+import path from 'path';
 import {
   ErrorHandler,
   getMetadataStorage,
@@ -340,9 +340,9 @@ function decodeQueryParams(req: NextApiRequest) {
 }
 
 /// This returns `true` if can continue and `false` or an error if cannot continue.
-async function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler<any, any>[]): Promise<boolean> {
+function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler<any, any>[]): Promise<boolean> {
   if (middlewares.length === 0) {
-    return true;
+    return Promise.resolve(true);
   }
 
   return new Promise((resolve, reject) => {
@@ -388,10 +388,10 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
 
 // Wraps the middleware into a error middleware, just for simplicity
 function wrapMiddleware(middleware: MiddlewareHandler<any, any>): ErrorMiddleware<any, any> {
-  return async (err, req, res, next) => {
+  return async (error, req, res, next) => {
     /* prettier-ignore */
-    if (err && middleware.length === 4) {
-      await middleware(err, req, res, next);
+    if (error && middleware.length === 4) {
+      await middleware(error, req, res, next);
     } 
     else {
       if (middleware.length === 4) {

@@ -1,5 +1,23 @@
+import { fetchJson } from 'lib/utils';
 import { NextApiResponse } from 'next';
 import { Middleware, NextApiRequestWithParams } from 'next-controllers';
+
+export interface Geolocation {
+  query: string;
+  status: string;
+  country: string;
+  countryCode: string;
+  region: string;
+  regionName: string;
+  city: string;
+  zip: string;
+  lat: number;
+  lon: number;
+  timezone: string;
+  isp: string;
+  org: string;
+  as: string;
+}
 
 // Returns a function that attach country to the header using 'http://ip-api.com/json' service
 export function country(): Middleware<NextApiRequestWithParams, NextApiResponse> {
@@ -10,10 +28,9 @@ export function country(): Middleware<NextApiRequestWithParams, NextApiResponse>
     ip = ip === '::1' ? '' : ip;
 
     if (ip != null) {
-      const url = `http://ip-api.com/json`;
-      const result = await fetch(url).then((res) => res.json());
-      res.setHeader('X-Country', result.country);
-      res.setHeader('X-CountryCode', result.countryCode);
+      const result = await fetchJson<Geolocation>(`http://ip-api.com/json/${ip}`);
+      res.setHeader('Country', result.country);
+      res.setHeader('CountryCode', result.countryCode);
     }
 
     next();

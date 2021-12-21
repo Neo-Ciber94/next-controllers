@@ -4,7 +4,8 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "no-console": "warn",
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "require-await": "warn"
   },
   "extends": [
     "eslint:recommended",
