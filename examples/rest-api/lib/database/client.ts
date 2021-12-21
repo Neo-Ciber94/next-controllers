@@ -2,14 +2,20 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { PrismaClient } from '@prisma/client';
 
-const client = new PrismaClient();
+let client: PrismaClient | undefined;
 
 export module Client {
   export function connect(): PrismaClient {
+    if (client == null) {
+      client = new PrismaClient();
+    }
+
     return client;
   }
 
-  export function disconnect(): Promise<void> {
-    return client.$disconnect();
+  export async function disconnect(): Promise<void> {
+    if (client) {
+      await client.$disconnect();
+    }
   }
 }

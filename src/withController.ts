@@ -14,6 +14,7 @@ import {
   HttpContext,
   RoutePath,
   MiddlewareHandler,
+  ErrorMiddleware,
 } from '.';
 import { ErrorHandlerInterface } from './interfaces/error-handler';
 import { getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
@@ -351,6 +352,7 @@ async function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler
 
 type DoneHandler = (result: boolean | { error: any }) => void;
 
+// Run the actual middlewares
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
   let moveNext = false;
@@ -360,27 +362,20 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
     dispatch(err);
   };
 
-  function dispatch(error?: any) {
+  async function dispatch(error?: any) {
     if (index === middlewares.length) {
       return done(error ? { error } : true);
     }
 
-    const middleware = middlewares[index++];
+    const middleware = wrapMiddleware(middlewares[index++]);
 
     try {
-      if (error) {
-        middleware(error, req, res, next);
-      } else {
-        if (middleware.length === 4) {
-          middleware(undefined, req, res, next);
-        } else {
-          (middleware as Middleware<any, any>)(req, res, next);
-        }
-      }
+      await middleware(error, req, res, next);
     } catch (e) {
       next(e);
     }
 
+    // If the middleware has not called next, exits the loop
     if (moveNext === false) {
       return done(false);
     }
@@ -389,4 +384,22 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
   }
 
   next();
+}
+
+// Wraps the middleware into a error middleware, just for simplicity
+function wrapMiddleware(middleware: MiddlewareHandler<any, any>): ErrorMiddleware<any, any> {
+  return async (err, req, res, next) => {
+    /* prettier-ignore */
+    if (err && middleware.length === 4) {
+      await middleware(err, req, res, next);
+    } 
+    else {
+      if (middleware.length === 4) {
+        await middleware(undefined, req, res, next);
+      } 
+      else {
+        await (middleware as Middleware<any, any>)(req, res, next);
+      }
+    }
+  };
 }
