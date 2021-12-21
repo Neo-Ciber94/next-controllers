@@ -349,12 +349,9 @@ async function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler
   });
 }
 
-function handle(
-  req: any,
-  res: any,
-  middlewares: MiddlewareHandler<any, any>[],
-  done: (result: boolean | { error: any }) => void,
-) {
+type DoneHandler = (result: boolean | { error: any }) => void;
+
+function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
   let moveNext = false;
 
