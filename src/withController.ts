@@ -339,11 +339,7 @@ function decodeQueryParams(req: NextApiRequest) {
 }
 
 /// This returns `true` if can continue and `false` or an error if cannot continue.
-async function runMiddlewares<Req, Res>(
-  req: Req,
-  res: Res,
-  middlewares: MiddlewareHandler<any, any>[],
-): Promise<boolean> {
+async function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler<any, any>[]): Promise<boolean> {
   if (middlewares.length === 0) {
     return true;
   }
@@ -353,13 +349,12 @@ async function runMiddlewares<Req, Res>(
   });
 }
 
-function handle<Req, Res>(
-  req: Req,
-  res: Res,
+function handle(
+  req: any,
+  res: any,
   middlewares: MiddlewareHandler<any, any>[],
   done: (result: boolean | { error: any }) => void,
 ) {
-  
   let index = 0;
   let moveNext = false;
 
@@ -382,7 +377,7 @@ function handle<Req, Res>(
         if (middleware.length === 4) {
           middleware(undefined, req, res, next);
         } else {
-          (middleware as Middleware<Req, Res>)(req, res, next);
+          (middleware as Middleware<any, any>)(req, res, next);
         }
       }
     } catch (e) {
