@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import path from 'path';
+import path, { resolve } from 'path';
 import {
   ErrorHandler,
   getMetadataStorage,
@@ -191,9 +191,6 @@ export function withController<
     // Slice the base path
     const url = requestUrl.slice(basePath.length);
 
-    // An error capture by the controller
-    let error: any;
-
     // Inject the context
     for (const context of httpContextMetadata) {
       controller[context.propertyName] = httpContext;
@@ -207,54 +204,26 @@ export function withController<
       return onNoMatch(httpContext);
     }
 
-    // Run all the middlewares of this controller
-    const result = await runMiddlewares(undefined, req, res, controllerMiddlewares);
-
-    if (typeof result !== 'boolean') {
-      error = result.error;
-    }
-
-    // The middleware did not continue or the response was already written
-    if (result === false || res.writableEnded) {
-      return;
-    }
-
-    // Only continue to the route if there is no errors
-    if (error == null) {
-      try {
-        // Run this route middlewares
-        const middlewareResult = await runMiddlewares(undefined, req, res, route.middlewares);
-
-        if (typeof middlewareResult !== 'boolean') {
-          error = middlewareResult.error;
-        }
-
-        // The middleware did not continue or the response was already written
-        if (middlewareResult === false || res.writableEnded) {
-          return;
-        }
-
-        // Get and returns the route response
-        const result = await route.handler(httpContext);
-        return await sendResponse(httpContext.response, controllerConfig, result);
-      } catch (e) {
-        error = e;
+    try {
+      /* prettier-ignore */
+      // Run the controller middlewares
+      if ((await runMiddlewares(req, res, controllerMiddlewares)) === false || res.writableEnded || res.writableFinished) {
+        return;
       }
-    }
 
-    // A response was already written
-    if (res.writableEnded) {
-      return;
-    }
+      // Run the route middlewares
+      if ((await runMiddlewares(req, res, route.middlewares)) === false || res.writableEnded || res.writableFinished) {
+        return;
+      }
 
-    if (error) {
+      // Get and returns the route response
+      const routeResult = await route.handler(httpContext);
+      return await sendResponse(httpContext.response, controllerConfig, routeResult);
+    } catch (error) {
       // Handle the error
       const errorResult = await onError(error, httpContext);
       return await sendResponse(httpContext.response, controllerConfig, errorResult);
     }
-
-    // Fallback
-    return onNoMatch(httpContext);
   };
 }
 
@@ -281,7 +250,7 @@ function findRoute<Req extends NextApiRequestWithParams>(
 
 async function sendResponse<Res extends NextApiResponse>(response: Res, config: RouteControllerConfig, value: unknown) {
   // A response was already written
-  if (response.writableEnded) {
+  if (response.writableEnded || response.writableFinished) {
     return;
   }
 
@@ -371,116 +340,61 @@ function decodeQueryParams(req: NextApiRequest) {
 
 /// This returns `true` if can continue and `false` or an error if cannot continue.
 async function runMiddlewares<Req, Res>(
-  error: any,
   req: Req,
   res: Res,
   middlewares: MiddlewareHandler<any, any>[],
-): Promise<boolean | { error: any }> {
-  // If there is no middlewares, exit
+): Promise<boolean> {
   if (middlewares.length === 0) {
     return true;
   }
 
-  let index = -1;
-
-  const next = async (err?: any) => {
-    index += 1;
-
-    if (index > middlewares.length) {
-      return true;
-    }
-
-    // Sets the error if any
-    error = err;
-
-    // Gets the next middleware
-    const middleware = middlewares[index];
-    const lastIndex = index;
-
-    try {
-      if (error) {
-        if (middleware.length === 4) {
-          await middleware(error, req, res, next);
-        }
-      } else {
-        if (middleware.length === 4) {
-          await middleware(error, req, res, next);
-        } else {
-          await (middleware as Middleware<any, any>)(req, res, next);
-        }
-      }
-    } catch (err) {
-      // Sets the error
-      await next(err);
-    }
-
-    // Next was not called
-    if (lastIndex === index) {
-      return false;
-    }
-
-    return true;
-  };
-
-  // Calls the middlewares recursively
-  if ((await next()) === false) {
-    return false;
-  }
-
-  if (error != null) {
-    return { error };
-  }
-
-  return true;
+  return new Promise((resolve, reject) => {
+    handle(req, res, middlewares, (result) => (typeof result === 'boolean' ? resolve(result) : reject(result.error)));
+  });
 }
 
-async function runMiddlewares2<Req, Res>(
-  error: any,
+function handle<Req, Res>(
   req: Req,
   res: Res,
   middlewares: MiddlewareHandler<any, any>[],
-): Promise<boolean | { error: any }> {
-  // If there is no middlewares, exit
-  if (middlewares.length === 0) {
-    return true;
-  }
+  done: (result: boolean | { error: any }) => void,
+) {
+  
+  let index = 0;
+  let moveNext = false;
 
-  let done = false;
   const next = (err?: any) => {
-    done = true;
-    error = err;
+    moveNext = true;
+    dispatch(err);
   };
 
-  for (const middleware of middlewares) {
+  function dispatch(error?: any) {
+    if (index === middlewares.length) {
+      return done(error ? { error } : true);
+    }
+
+    const middleware = middlewares[index++];
+
     try {
       if (error) {
-        if (middleware.length === 4) {
-          await middleware(error, req, res, next);
-        }
+        middleware(error, req, res, next);
       } else {
         if (middleware.length === 4) {
-          await middleware(error, req, res, next);
+          middleware(undefined, req, res, next);
         } else {
-          await (middleware as Middleware<any, any>)(req, res, next);
+          (middleware as Middleware<Req, Res>)(req, res, next);
         }
       }
-    } catch (err) {
-      // Sets the error
-      next(err);
+    } catch (e) {
+      next(e);
     }
 
-    // Next was not called
-    if (!done) {
-      return false;
+    if (moveNext === false) {
+      return done(false);
     }
 
-    // Resets the state
-    done = false;
+    moveNext = false;
   }
 
-  if (error != null) {
-    return { error };
-  }
-
-  return true;
+  next();
 }

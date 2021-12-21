@@ -1,7 +1,6 @@
 import { country } from 'lib/middlewares/country.middleware';
 import { UserRepository } from 'lib/repositories/user.repository';
 import morgan from 'morgan';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { Delete, Get, NextApiContext, Post, Put, UseMiddleware, withController } from 'next-controllers';
 
 @UseMiddleware(morgan('dev'), country())
@@ -48,7 +47,3 @@ class UserController {
 }
 
 export default withController(UserController);
-// export default function handler(req: NextApiRequest, res: NextApiResponse) {
-//   res.setHeader('X-Number', 1);
-//   res.status(200).json({ message: 'Hello World!' });
-// }
