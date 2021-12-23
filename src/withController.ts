@@ -277,7 +277,6 @@ async function sendResponse<Res extends NextApiResponse>(response: Res, config: 
 function defaultOnError<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
   err: any,
   { response }: HttpContext<any, Req, Res>,
-  next: NextHandler,
 ) {
   // eslint-disable-next-line no-console
   console.error(err);
@@ -285,7 +284,6 @@ function defaultOnError<Req extends NextApiRequestWithParams, Res extends NextAp
   response.status(500).json({
     message: err.message || HTTP_STATUS_CODES[500],
   });
-  next();
 }
 
 function defaultOnNoMatch<Req extends NextApiRequestWithParams, Res extends NextApiResponse>(
