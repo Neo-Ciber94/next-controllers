@@ -1,4 +1,6 @@
 import '../styles/globals.css'
+import '../styles/Home.css'
+import '../styles/Sidebar.css'
 import type { AppProps } from 'next/app'
 
 function MyApp({ Component, pageProps }: AppProps) {

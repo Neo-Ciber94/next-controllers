@@ -1,9 +1,9 @@
-import { country } from 'lib/middlewares/country.middleware';
+import { geolocation } from 'lib/middlewares/geolocation.middleware';
 import { UserRepository } from 'lib/repositories/user.repository';
 import morgan from 'morgan';
 import { Delete, Get, NextApiContext, Post, Put, UseMiddleware, withController } from 'next-controllers';
 
-@UseMiddleware(morgan('dev'), country())
+@UseMiddleware(morgan('dev'), geolocation())
 class UserController {
   private readonly userRepository = new UserRepository();
 

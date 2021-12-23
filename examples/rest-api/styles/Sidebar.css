@@ -1,0 +1,160 @@
+:root {
+  --sidebar-width: 300px;
+  --accent-color: rgb(12, 12, 12);
+}
+
+.sidebar-item-title {
+  display: inline-block;
+}
+
+#sidebar {
+  height: 100%;
+  width: var(--sidebar-width);
+  background-color: rgb(46, 45, 54);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  box-shadow: 5px 0px 10px 1px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-container h1 {
+  padding: 30px 10px;
+  background-color: var(--accent-color);
+  margin: 0;
+  user-select: none;
+  cursor: pointer;
+}
+
+.sidebar-item {
+  width: 100%;
+  padding: 4px;
+}
+
+.sidebar-item button {
+  width: 100%;
+  height: 65px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  font-size: 23px;
+  font-weight: 600;
+  text-align: left;
+  padding: 0px 20px;
+  background-color: transparent;
+  color: white;
+  transition: all 0.2s;
+  border-radius: 10px;
+}
+
+.sidebar-item button:hover {
+  background-color: var(--accent-color);
+}
+
+.sidebar-item.active button {
+  background-color: var(--accent-color);
+}
+
+.sidebar-item-icon {
+  color: white;
+  font-size: 25px;
+  margin-right: 25px;
+  display: inline-block;
+}
+
+main {
+  margin-left: var(--sidebar-width);
+  background-color: rgb(27, 27, 37);
+  padding: 20px;
+  height: 100vh;
+}
+
+.sidebar-link {
+  padding: 25px 15px;
+  background-color: var(--accent-color);
+}
+
+.sidebar-link:hover .github-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sidebar-link a {
+  color: white;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 600;
+  display: block;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-items: center;
+  align-content: center;
+}
+
+.sidebar-link .github-icon {
+  margin-right: 25px;
+}
+
+@media (max-width: 700px) {
+  #sidebar {
+    width: 60px;
+  }
+
+  .sidebar-item button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+    justify-content: center;
+  }
+
+  .sidebar-item-icon {
+    margin-right: 0;
+    transform: scale(0.7);
+  }
+
+  .sidebar-link span{
+    display: none;
+  }
+
+  .sidebar-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+  }
+
+  .sidebar-link .github-icon {
+    margin-right: 0;
+    transform: scale(0.7);
+  }  
+
+  main {
+    margin-left: 60px;
+  }
+
+  .sidebar-item-title {
+    display: none;
+  }
+}
