@@ -365,7 +365,7 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
     try {
       await middleware(error, req, res, next);
     } catch (e) {
-      next(e);
+      await next(e);
     }
 
     // If the middleware has not called next, exits the loop

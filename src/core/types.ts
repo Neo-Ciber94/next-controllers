@@ -23,7 +23,7 @@ export type Handler<Req, Res> = (context: HttpContext<any, Req, Res>) => Promise
 /**
  * A handler for call the next action.
  */
-export type NextHandler = (err?: any) => void;
+export type NextHandler = (err?: any) => Promise<void>;
 
 /**
  * A handler for the errors.
