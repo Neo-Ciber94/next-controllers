@@ -353,19 +353,14 @@ type DoneHandler = (result: boolean | { error: any }) => void;
 // Run the actual middlewares
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
-  let moveNext = false;
+  async function next(error?: any) {
 
-  const next = (err?: any) => {
-    moveNext = true;
-    dispatch(err);
-  };
-
-  async function dispatch(error?: any) {
     if (index === middlewares.length) {
       return done(error ? { error } : true);
     }
 
     const middleware = wrapMiddleware(middlewares[index++]);
+    const lastIndex = index;
 
     try {
       await middleware(error, req, res, next);
@@ -374,11 +369,9 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
     }
 
     // If the middleware has not called next, exits the loop
-    if (moveNext === false) {
+    if (lastIndex === index) {
       return done(false);
     }
-
-    moveNext = false;
   }
 
   next();
