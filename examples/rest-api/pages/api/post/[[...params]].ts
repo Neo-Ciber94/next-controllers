@@ -1,8 +1,8 @@
 import { PostRepository } from 'lib/repositories/post.repository';
-import morgan from 'morgan';
 import { Delete, Get, NextApiContext, Post, Put, UseMiddleware, withController } from 'next-controllers';
+import common from 'lib/middlewares/common';
 
-@UseMiddleware(morgan('dev'))
+@UseMiddleware(...common)
 class PostController {
   private readonly postRepository = new PostRepository();
 
