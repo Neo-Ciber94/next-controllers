@@ -1,3 +1,6 @@
+/**
+ * A list of HTTP status codes.
+ */
 export const HTTP_STATUS_CODES = {
   100: 'Continue',
   101: 'Switching Protocols',

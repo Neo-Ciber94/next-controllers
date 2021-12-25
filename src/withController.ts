@@ -6,7 +6,6 @@ import {
   Handler,
   ActionType,
   NextApiRequestWithParams,
-  NextHandler,
   ObjectType,
   Middleware,
   DEFAULT_CONTROLLER_CONFIG,

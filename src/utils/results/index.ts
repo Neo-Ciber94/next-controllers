@@ -32,7 +32,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` for a json response.
+   * Creates a `Result` for a 200 (OK) json response.
    * @param data The data to send.
    * @returns A result for a json response.
    */
@@ -41,7 +41,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` for a text response.
+   * Creates a `Result` for a 200 (OK) text response.
    * @param text The text to send.
    * @returns A result for a text response.
    */
@@ -50,7 +50,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` for a file response.
+   * Creates a `Result` for a 200 (OK) file response.
    * @param filePath The path of the file relative to the root directory.
    * @param contentType The mime-type of the file.
    * @returns A result for a file.
@@ -60,7 +60,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` with a file download.
+   * Creates a `Result` with a 200 (OK) file download.
    * @param options The options used to send the file.
    * @param contentType The mime-type of the file.
    * @returns A result for a file download.
@@ -68,7 +68,7 @@ export abstract class Results<T = any> {
   static download(options: ResultWithDownloadOptions): Results;
 
   /**
-   * Creates a `Result` with a file download.
+   * Creates a `Result` with a 200 (OK) file download.
    * @param filePath The path of the file to send.
    * @param contentType The mime-type of the file.
    * @param fileName The name of the file when downloaded.
@@ -89,7 +89,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` for a byte stream.
+   * Creates a `Result` for a 200 (OK) byte stream.
    * @param buffer The stream of bytes to send.
    * @param contentType The mime-type of the data.
    * @returns A result for a stream.
@@ -99,7 +99,7 @@ export abstract class Results<T = any> {
   }
 
   /**
-   * Creates a `Result` for a byte stream.
+   * Creates a `Result` for a 200 (OK) byte stream.
    * @param stream The stream of bytes to send.
    * @param contentType The mime-type of the data.
    * @returns A result for a stream.
@@ -133,7 +133,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 201 (Created) response.
    */
-  static created(data: any, uri: string): Results {
+  static created(data: unknown, uri: string): Results {
     return new ResultWithStatusCodeCreated(data, uri);
   }
 
