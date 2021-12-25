@@ -1,27 +1,32 @@
 import fs from 'fs';
 import path from 'path';
 import { NextApiResponse } from 'next';
-import { HTTP_STATUS_CODES } from '.';
+import { assertTrue, HTTP_STATUS_CODES } from '..';
 
 /**
- * Represents a handler for an http response.
+ * A callback to resolve a `Results`.
  */
-export abstract class Results {
+export type ResolveResult<T> = (res: NextApiResponse<T>) => void | Promise<void>;
+
+/**
+ * Represents a handler for a http response.
+ */
+export abstract class Results<T = any> {
   /**
-   * Creates a response.
+   * Sends a response.
    * @param res The response object.
    */
-  abstract resolve(res: NextApiResponse): void | Promise<void>;
+  abstract resolve(res: NextApiResponse<T>): void | Promise<void>;
 
   /**
    * Creates a `Results` instance from a function.
-   * @param fn The function to execute.
+   * @param resolve The function to execute.
    * @returns A result using the given function.
    */
-  static fn(fn: (res: NextApiResponse) => any): Results {
+  static fn<T>(resolve: ResolveResult<T>): Results {
     return new (class extends Results {
       resolve(res: NextApiResponse): void | Promise<void> {
-        return fn(res);
+        return resolve(res);
       }
     })();
   }
@@ -31,7 +36,7 @@ export abstract class Results {
    * @param data The data to send.
    * @returns A result for a json response.
    */
-  static json(data: any): Results {
+  static json<T>(data: T): Results<T> {
     return Results.fn((res) => res.json(data));
   }
 
@@ -51,35 +56,56 @@ export abstract class Results {
    * @returns A result for a file.
    */
   static file(filePath: string, contentType: string): Results {
-    return new ResultsWithFile(filePath, contentType);
+    return new ResultWithFile(filePath, contentType);
   }
 
   /**
-   * Creates a `Result` for that downloads a file.
-   * @param filePath The path of the file relative to the root directory.
+   * Creates a `Result` with a file download.
+   * @param options The options used to send the file.
    * @param contentType The mime-type of the file.
    * @returns A result for a file download.
    */
-  static download(filePath: string, contentType: string, filename?: string): Results {
-    return new ResultsWithDownload(filePath, contentType, filename);
+  static download(options: ResultWithDownloadOptions): Results;
+
+  /**
+   * Creates a `Result` with a file download.
+   * @param filePath The path of the file to send.
+   * @param contentType The mime-type of the file.
+   * @param fileName The name of the file when downloaded.
+   */
+  static download(filePath: string, contentType: string, fileName?: string): Results;
+
+  static download(
+    optionsOrFilePath: string | ResultWithDownloadOptions,
+    contentType?: string,
+    fileName?: string,
+  ): Results {
+    if (typeof optionsOrFilePath === 'object') {
+      return new ResultWithDownload(optionsOrFilePath);
+    }
+
+    assertTrue(contentType, 'contentType is required');
+    return new ResultWithDownload({ filePath: optionsOrFilePath, contentType, fileName });
   }
 
   /**
    * Creates a `Result` for a byte stream.
    * @param buffer The stream of bytes to send.
+   * @param contentType The mime-type of the data.
    * @returns A result for a stream.
    */
-  static bytes(buffer: Buffer): Results {
-    return Results.fn((res) => res.write(buffer));
+  static bytes(buffer: Buffer, contentType: string): Results {
+    return new ResultWithBuffer(buffer, contentType);
   }
 
   /**
    * Creates a `Result` for a byte stream.
    * @param stream The stream of bytes to send.
+   * @param contentType The mime-type of the data.
    * @returns A result for a stream.
    */
-  static stream(stream: fs.ReadStream): Results {
-    return Results.fn((res) => stream.pipe(res));
+  static stream(stream: fs.ReadStream, contentType: string): Results {
+    return new ResultWithStream(stream, contentType);
   }
 
   /**
@@ -89,7 +115,7 @@ export abstract class Results {
    * @returns A result for a status code.
    */
   static statusCode(statusCode: keyof typeof HTTP_STATUS_CODES, message?: string): Results {
-    return new ResultsWithStatusCode(statusCode, message);
+    return new ResultWithStatusCode(statusCode, message);
   }
 
   /**
@@ -98,16 +124,17 @@ export abstract class Results {
    * @returns A result for an 200 (OK) response.
    */
   static ok(message?: string): Results {
-    return ResultsWithStatusCode.create(200, message);
+    return ResultWithStatusCode.create(200, message);
   }
 
   /**
    * Creates a `Result` for a 201 (Created) response.
+   * @param data The created object.
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 201 (Created) response.
    */
-  static created(obj: any, uri: string): Results {
-    return new ResultsWithStatusCodeCreated(obj, uri);
+  static created(data: any, uri: string): Results {
+    return new ResultWithStatusCodeCreated(data, uri);
   }
 
   /**
@@ -116,7 +143,7 @@ export abstract class Results {
    * @returns A result for an 202 (Accepted) response.
    */
   static accepted(message?: string): Results {
-    return ResultsWithStatusCode.create(202, message);
+    return ResultWithStatusCode.create(202, message);
   }
 
   /**
@@ -125,7 +152,20 @@ export abstract class Results {
    * @returns A result for an 204 (No Content) response.
    */
   static noContent(message?: string): Results {
-    return ResultsWithStatusCode.create(204, message);
+    return ResultWithStatusCode.create(204, message);
+  }
+
+  /**
+   * Creates a `Result` that redirect to the given uri.
+   * @param uri The uri to redirect to.
+   * @param permanent Whether to redirect with a permanent status code or temporary.
+   * @returns A results that redirects to the given uri.
+   */
+  static redirect(uri: string, { permanent }: { permanent: boolean }): Results {
+    return Results.fn((res) => {
+      const statusCode = permanent ? 308 : 307;
+      res.redirect(statusCode, uri);
+    });
   }
 
   /**
@@ -134,7 +174,7 @@ export abstract class Results {
    * @returns A result for an 400 (Bad Request) response.
    */
   static badRequest(message?: string): Results {
-    return ResultsWithStatusCode.create(400, message);
+    return ResultWithStatusCode.create(400, message);
   }
 
   /**
@@ -143,7 +183,7 @@ export abstract class Results {
    * @returns A result for an 401 (Unauthorized) response.
    */
   static unauthorized(message?: string): Results {
-    return ResultsWithStatusCode.create(401, message);
+    return ResultWithStatusCode.create(401, message);
   }
 
   /**
@@ -152,7 +192,7 @@ export abstract class Results {
    * @returns A result for an 403 (Forbidden) response.
    */
   static forbidden(message?: string): Results {
-    return ResultsWithStatusCode.create(403, message);
+    return ResultWithStatusCode.create(403, message);
   }
 
   /**
@@ -161,7 +201,7 @@ export abstract class Results {
    * @returns A result for an 404 (Not Found) response.
    */
   static notFound(message?: string): Results {
-    return ResultsWithStatusCode.create(404, message);
+    return ResultWithStatusCode.create(404, message);
   }
 
   /**
@@ -170,27 +210,47 @@ export abstract class Results {
    * @returns A result for an 500 (Internal Server Error) response.
    */
   static internalServerError(message?: string): Results {
-    return ResultsWithStatusCode.create(500, message);
+    return ResultWithStatusCode.create(500, message);
   }
 }
 
-class ResultsWithStatusCode extends Results {
-  private static cache = new Map<number, ResultsWithStatusCode>();
+/**
+ * Options used for a file download.
+ */
+export type ResultWithDownloadOptions = {
+  /**
+   * The path of the file to send.
+   */
+  filePath: string;
+
+  /**
+   * The mime-type of the data.
+   */
+  contentType: string;
+
+  /**
+   * The name of the file when downloaded.
+   */
+  fileName?: string;
+};
+
+class ResultWithStatusCode extends Results {
+  private static cache = new Map<number, ResultWithStatusCode>();
 
   constructor(private readonly statusCode: number, private readonly message?: string) {
     super();
   }
 
-  static create(statusCode: number, message?: string): ResultsWithStatusCode {
+  static create(statusCode: number, message?: string): ResultWithStatusCode {
     if (message || !(statusCode in HTTP_STATUS_CODES)) {
-      return new ResultsWithStatusCode(statusCode, message);
+      return new ResultWithStatusCode(statusCode, message);
     }
 
-    let result = ResultsWithStatusCode.cache.get(statusCode);
+    let result = ResultWithStatusCode.cache.get(statusCode);
 
     if (!result) {
-      result = new ResultsWithStatusCode(statusCode);
-      ResultsWithStatusCode.cache.set(statusCode, result);
+      result = new ResultWithStatusCode(statusCode);
+      ResultWithStatusCode.cache.set(statusCode, result);
     }
 
     return result;
@@ -203,7 +263,7 @@ class ResultsWithStatusCode extends Results {
   }
 }
 
-class ResultsWithStatusCodeCreated extends Results {
+class ResultWithStatusCodeCreated extends Results {
   constructor(private readonly obj: any, private readonly uri: string) {
     super();
   }
@@ -214,7 +274,7 @@ class ResultsWithStatusCodeCreated extends Results {
   }
 }
 
-class ResultsWithFile extends Results {
+class ResultWithFile extends Results {
   constructor(private readonly path: string, private readonly contentType: string) {
     super();
   }
@@ -229,31 +289,48 @@ class ResultsWithFile extends Results {
   }
 }
 
-class ResultsWithDownload extends Results {
-  constructor(private readonly path: string, private readonly contentType: string, private readonly fileName?: string) {
+class ResultWithDownload extends Results {
+  constructor(private readonly options: ResultWithDownloadOptions) {
     super();
   }
 
   resolve(res: NextApiResponse<any>): void | Promise<void> {
-    const filePath = path.join(process.cwd(), this.path);
-    const fileName = this.fileName ?? path.basename(filePath);
+    const filePath = path.join(process.cwd(), this.options.filePath);
+    const fileName = this.options.fileName ?? path.basename(filePath);
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
 
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-    res.setHeader('Content-Type', this.contentType);
+    res.setHeader('Content-Type', this.options.contentType);
     res.status(200);
   }
 }
 
-interface SendTextOptions {
-  res: NextApiResponse<any>;
-  text: string;
-  statusCode?: number;
-  encoding?: string;
+class ResultWithBuffer extends Results {
+  constructor(private readonly buffer: Buffer, private readonly contentType: string) {
+    super();
+  }
+
+  resolve(res: NextApiResponse<any>): void | Promise<void> {
+    res.setHeader('Content-Type', this.contentType);
+    res.status(200);
+    res.write(this.buffer);
+  }
 }
 
-function sendText(options: SendTextOptions): void {
+class ResultWithStream extends Results {
+  constructor(private readonly stream: fs.ReadStream, private readonly contentType: string) {
+    super();
+  }
+
+  resolve(res: NextApiResponse<any>): void | Promise<void> {
+    res.setHeader('Content-Type', this.contentType);
+    res.status(200);
+    this.stream.pipe(res);
+  }
+}
+
+function sendText(options: { res: NextApiResponse<any>; text: string; statusCode?: number; encoding?: string }): void {
   const { res, text, statusCode, encoding = 'utf-8' } = options;
   res.setHeader('Content-Type', `text/plain; charset=${encoding}`);
   res.status(statusCode ?? 200).send(text);
