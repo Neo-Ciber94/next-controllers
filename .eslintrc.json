@@ -5,7 +5,8 @@
   "rules": {
     "no-console": "warn",
     "@typescript-eslint/no-explicit-any": "off",
-    "require-await": "warn"
+    "require-await": "warn",
+    "@typescript-eslint/no-namespace": "off"
   },
   "extends": [
     "eslint:recommended",
