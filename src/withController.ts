@@ -16,7 +16,7 @@ import {
   ErrorMiddleware,
 } from '.';
 import { ErrorHandlerInterface } from './interfaces/error-handler';
-import { getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
+import { assertTrue, getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
 type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
 
@@ -139,6 +139,7 @@ export function withController<
   for (const action of actions) {
     const pattern: string | RegExp = action.pattern || '/';
 
+    // TODO: Check if this check is valid for RegExp
     if (!pattern.toString().startsWith('/')) {
       throw new Error(`Route pattern must start with "/": ${pattern}`);
     }
@@ -147,10 +148,8 @@ export function withController<
       .filter((m) => m.methodName && m.methodName === action.methodName)
       .map((m) => m.handler);
 
-    // prettier-ignore
     const method = controller[action.methodName] as Handler<Req, Res>;
-    // eslint-disable-next-line no-console
-    console.assert(method != null, `Method ${action.methodName} not found`);
+    assertTrue(method != null, `Method ${action.methodName} not found`);
 
     controllerRoutes.push({
       path: new RoutePath(pattern as any), // FIXME: Typescript is not detecting string|RegExp
@@ -188,12 +187,17 @@ export function withController<
       return onNoMatch(httpContext);
     }
 
-    // Slice the base path
-    const url = requestUrl.slice(basePath.length);
-
     // Inject the context
     for (const context of httpContextMetadata) {
       controller[context.propertyName] = httpContext;
+    }
+
+    // Slice the base path
+    let url = requestUrl.slice(basePath.length);
+
+    // Ensures the url starts with a slash
+    if (!url.startsWith('/')) {
+      url = '/' + url;
     }
 
     // Finds the route this request is going to, and attach the request params
