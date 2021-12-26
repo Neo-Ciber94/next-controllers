@@ -294,7 +294,7 @@ function defaultOnNoMatch<Req extends NextApiRequestWithParams, Res extends Next
 }
 
 function getBasePath(options?: string | WithControllerOptions) {
-  options = options || {};
+  options = options == null ? {} : options;
 
   if (typeof options === 'string') {
     return `/api/${options}`;
@@ -353,7 +353,6 @@ type DoneHandler = (result: boolean | { error: any }) => void;
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
   async function next(error?: any) {
-
     if (index === middlewares.length) {
       return done(error ? { error } : true);
     }
