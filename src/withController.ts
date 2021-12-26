@@ -139,8 +139,7 @@ export function withController<
   for (const action of actions) {
     const pattern: string | RegExp = action.pattern || '/';
 
-    // TODO: Check if this check is valid for RegExp
-    if (!pattern.toString().startsWith('/')) {
+    if (typeof pattern === 'string' && !pattern.toString().startsWith('/')) {
       throw new Error(`Route pattern must start with "/": ${pattern}`);
     }
 
