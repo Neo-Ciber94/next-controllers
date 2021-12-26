@@ -18,9 +18,9 @@ import {
 import { ErrorHandlerInterface } from './interfaces/error-handler';
 import { assertTrue, getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
 
-type NoReturnHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => void | Promise<void>;
+type ContextApiHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => any | Promise<any>;
 
-type NextControllerApiHandler<Req, Res> = (req: Req, res: Res) => Promise<any>;
+type ApiHandler<Req, Res> = (req: Req, res: Res) => Promise<any>;
 
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
@@ -62,7 +62,7 @@ export interface WithControllerOptions {
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, basePath?: string): NextControllerApiHandler<Req, Res>;
+>(target: ObjectType<any>, basePath?: string): ApiHandler<Req, Res>;
 
 /**
  * Creates a request handler using the specified controller.
@@ -72,7 +72,7 @@ export function withController<
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, options: WithControllerOptions): NextControllerApiHandler<Req, Res>;
+>(target: ObjectType<any>, options: WithControllerOptions): ApiHandler<Req, Res>;
 
 /**
  * Creates a request handler using the specified controller.
@@ -82,7 +82,7 @@ export function withController<
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, options?: string | WithControllerOptions): NextControllerApiHandler<Req, Res> {
+>(target: ObjectType<any>, options?: string | WithControllerOptions): ApiHandler<Req, Res> {
   const basePath = getBasePath(options);
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
@@ -123,14 +123,14 @@ export function withController<
 
   // prettier-ignore
   const _onError = (controllerOnError || errorHandler?.bind(controller) || defaultOnError) as ErrorHandler<Req, Res>;
-  const _onNoMatch = (noMatchHandler?.bind(controller) || defaultOnNoMatch) as NoReturnHandler<Req, Res>;
+  const _onNoMatch = (noMatchHandler?.bind(controller) || defaultOnNoMatch) as ContextApiHandler<Req, Res>;
 
   const onError: ErrorHandler<Req, Res> = async (err, context) => {
     const result = await _onError(err, context);
     return await sendResponse(context.response, controllerConfig, result);
   };
 
-  const onNoMatch: NoReturnHandler<Req, Res> = async (context) => {
+  const onNoMatch: ContextApiHandler<Req, Res> = async (context) => {
     const result = await _onNoMatch(context);
     return await sendResponse(context.response, controllerConfig, result);
   };

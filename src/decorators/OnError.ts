@@ -3,7 +3,7 @@ import { getMetadataStorage } from '..';
 /**
  * Register a method that handles errors in the form:
  * ```
- * (err: any, context: NextApiContext) => void
+ * (err: unknown, context: NextApiContext) => void
  * ```
  */
 export function OnError() {

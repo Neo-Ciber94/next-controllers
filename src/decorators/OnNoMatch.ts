@@ -2,8 +2,10 @@ import { getMetadataStorage } from '..';
 
 /**
  * Register a method that handles request that don't match any route.
+ * 
+ * In the form:
  * ```
- * (err: any, req: NextApiRequest, res: NextApiRespose, next: (error?: any) => void) => void
+ * (context: NextApiContext) => void
  * ```
  */
 export function OnNoMatch() {
