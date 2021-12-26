@@ -5,8 +5,19 @@ import supertest from 'supertest';
 
 type ObjectType<T> = { new (...args: any[]): T };
 
+type QueryParams = Record<string, string | string[]>;
+
+/**
+ * Represents a `SuperTest` instance that should be closed.
+ */
 export type SuperTestHandler = supertest.SuperTest<supertest.Test> & { close: () => void };
 
+/**
+ * Creates a test server with the given controller and returns a instance to send test request.
+ * @param target The controller class.
+ * @returns A `SuperTest` instance to test the controller that should be close at the end, to close the
+ * underlying server used.
+ */
 export function withTestController<T = any>(target: ObjectType<T>): SuperTestHandler {
   const handler = withController(target, '');
 
@@ -40,8 +51,6 @@ export function withTestController<T = any>(target: ObjectType<T>): SuperTestHan
   (test as any).close = close;
   return test as SuperTestHandler;
 }
-
-type QueryParams = Record<string, string | string[]>;
 
 function parseQuery(url?: string): QueryParams {
   const query = url?.split('?')[1];
