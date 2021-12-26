@@ -11,10 +11,11 @@ export function withTestController<T = any>(target: ObjectType<T>): SuperTestHan
   const handler = withController(target, '');
 
   const listener: RequestListener = (req, res) => {
+    const query = parseQuery(req.url);
     return apiResolver(
       req,
       res,
-      undefined,
+      query,
       handler,
       {
         previewModeEncryptionKey: '',
@@ -38,4 +39,25 @@ export function withTestController<T = any>(target: ObjectType<T>): SuperTestHan
   const test = supertest(server);
   (test as any).close = close;
   return test as SuperTestHandler;
+}
+
+type QueryParams = Record<string, string | string[]>;
+
+function parseQuery(url?: string): QueryParams {
+  const query = url?.split('?')[1];
+
+  if (!query) {
+    return {};
+  }
+
+  return query.split('&').reduce((acc, cur) => {
+    const [key, value] = cur.split('=');
+    const array = value.split(',');
+    if (array.length > 1) {
+      acc[key] = array;
+    } else {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as QueryParams);
 }
