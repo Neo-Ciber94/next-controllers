@@ -232,20 +232,26 @@ function findRoute<Req extends NextApiRequestWithParams>(
   req: Req,
   routes: ControllerRoute<any, any>[],
 ): ControllerRoute<any, any> | null {
+  let resultRoute: ControllerRoute<any, any> | null = null;
+
   for (const route of routes) {
     const matches = route.path.match(url);
 
-    if ((route.method !== 'ALL' && route.method !== req.method) || !matches) {
-      continue;
+    if ((route.method === 'ALL' || route.method === req.method) && matches) {
+      // Action method 'ALL' have the lowest priority
+      if (resultRoute && route.method === 'ALL' && resultRoute.method !== route.method) {
+        continue;
+      }
+
+      // Attach params
+      req.params = matches;
+
+      // Sets matching route
+      resultRoute = route;
     }
-
-    // Attach params
-    req.params = matches;
-
-    return route;
   }
 
-  return null;
+  return resultRoute;
 }
 
 async function sendResponse<Res extends NextApiResponse>(response: Res, config: RouteControllerConfig, value: unknown) {
