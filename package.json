@@ -29,13 +29,11 @@
   "watch": {
     "build:dev": {
       "patterns": [
-        [
-          "src",
-          "test"
-        ]
+        "src",
+        "test"
       ],
       "extensions": "ts,js",
-      "quiet": true
+      "quite": false
     }
   },
   "dependencies": {
