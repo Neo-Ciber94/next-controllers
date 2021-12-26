@@ -1,4 +1,5 @@
 export * from './All';
+export * from './Connect';
 export * from './Context';
 export * from './Delete';
 export * from './Get';
