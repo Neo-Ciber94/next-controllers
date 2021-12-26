@@ -1,10 +1,10 @@
 import { NextApiResponse } from 'next';
-import { HttpContext, NextApiRequestWithParams } from 'src';
+import { NextApiContext, NextApiRequestWithParams } from 'src';
 
 export interface ErrorHandlerInterface<
   TState = any,
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
 > {
-  onError(error: any, context: HttpContext<TState, Req, Res>): Promise<any> | any;
+  onError(error: any, context: NextApiContext<TState, Req, Res>): Promise<any> | any;
 }

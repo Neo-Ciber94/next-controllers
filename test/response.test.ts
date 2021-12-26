@@ -11,6 +11,17 @@ class TestController {
   getFromResponse({ response }: NextApiContext) {
     response.send('Hello Response!');
   }
+
+  @Get('/from-return-async')
+  async getFromReturnAsync() {
+    return await Promise.resolve('Hello Return!');
+  }
+
+  @Get('/from-response-async')
+  async getFromResponseAsync({ response }: NextApiContext) {
+    response.send('Hello Response!');
+    await Promise.resolve();
+  }
 }
 
 const handler = withTestController(TestController);
@@ -25,5 +36,13 @@ describe('Controller responses', () => {
 
   test('Response from context response', () => {
     return handler.get('/api/from-response').expect(200, 'Hello Response!');
+  });
+
+  test('Response from function return async', () => {
+    return handler.get('/api/from-return-async').expect(200, 'Hello Return!');
+  });
+
+  test('Response from context response async', () => {
+    return handler.get('/api/from-response-async').expect(200, 'Hello Response!');
   });
 });
