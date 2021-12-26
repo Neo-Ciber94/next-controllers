@@ -4,7 +4,7 @@ import {
   ErrorHandler,
   getMetadataStorage,
   Handler,
-  ActionType,
+  ActionMethod,
   NextApiRequestWithParams,
   ObjectType,
   Middleware,
@@ -24,7 +24,7 @@ type NextControllerApiHandler<Req, Res> = (req: Req, res: Res) => Promise<any>;
 
 interface ControllerRoute<Req, Res> {
   path: RoutePath;
-  method: ActionType;
+  method: ActionMethod;
   handler: Handler<Req, Res>;
   middlewares: MiddlewareHandler<Req, Res>[];
 }

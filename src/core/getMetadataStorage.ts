@@ -1,5 +1,5 @@
 import { MiddlewareHandler, ObjectType } from './types';
-import { ActionType } from './ActionType';
+import { ActionMethod } from './action-method';
 import { RouteControllerConfig } from '..';
 
 interface ControllerMetadata {
@@ -10,7 +10,7 @@ interface ControllerMetadata {
 interface ControllerActionMetadata {
   target: ObjectType<any>;
   pattern?: string | RegExp;
-  method: ActionType;
+  method: ActionMethod;
   methodName: string;
 }
 
