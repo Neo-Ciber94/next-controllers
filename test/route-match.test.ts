@@ -34,6 +34,20 @@ class MyController {
     const { number = '0' } = request.params;
     return parseInt(number, 10) * 3;
   }
+
+  @Get(/[/]even[/](?<number>(\d+)*[02468])/)
+  even({ request }: NextApiContext) {
+    const { number = '0' } = request.params;
+    const isEven = parseInt(number, 10) % 2 === 0;
+    return { isEven };
+  }
+
+  @Get(/[/]even[/](?<number>(\d+)*[13579])/)
+  odd({ request }: NextApiContext) {
+    const { number = '0' } = request.params;
+    const isOdd = parseInt(number, 10) % 2 !== 0;
+    return { isOdd };
+  }
 }
 
 const handler = withTestController(MyController);
@@ -70,5 +84,13 @@ describe('Route pattern matching', () => {
     await handler.get('/api/triple/2').expect(200, '6');
     await handler.get('/api/triple/3').expect(200, '9');
     await handler.get('/api/triple/xyz').expect(404);
+  });
+
+  test('Match similar endpoint - GET /api/even/:number', async () => {
+    await handler.get('/api/even/1').expect(200, { isOdd: true });
+    await handler.get('/api/even/2').expect(200, { isEven: true });
+    await handler.get('/api/even/3').expect(200, { isOdd: true });
+    await handler.get('/api/even/4').expect(200, { isEven: true });
+    await handler.get('/api/even/abc').expect(404);
   });
 });
