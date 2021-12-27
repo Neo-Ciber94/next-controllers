@@ -327,8 +327,6 @@ function getBasePath(options?: string | WithControllerOptions) {
 }
 
 function getDirName(): string {
-  // return _dirname; // FIXME: This should be returned but is returning the node_module
-
   const frame = getStackFrame(1);
   const dirname = path.dirname(frame.file || '');
   return dirname;

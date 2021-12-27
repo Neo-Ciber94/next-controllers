@@ -18,17 +18,7 @@ yarn add next-controllers
 
 ## Setup
 
-1. Add the following to your `next.config.js`. **next-controllers** uses nodejs `__dirname` to find the controller base path, so we need the override the webpack behaviour.
-
-   ```js
-   webpack5: true,
-   webpack: (config) => {
-     config.resolve.fallback = { __dirname: false };
-     return config;
-   }
-   ```
-
-2. Enable decorators in your `tsconfig.ts`:
+1. Enable decorators in your `tsconfig.ts`:
 
    ```json
    {
@@ -37,7 +27,7 @@ yarn add next-controllers
    }
    ```
 
-3. Add or modify a `.babelrc` file with the following content:
+2. Add or modify a `.babelrc` file with the following content:
 
    ```json
    {
@@ -46,7 +36,7 @@ yarn add next-controllers
    }
    ```
 
-4. Install the `babel` dependencies
+3. Install the `babel` dependencies
 
    ```codecopy
    npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators
