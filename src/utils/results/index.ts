@@ -9,6 +9,11 @@ import { assertTrue, HTTP_STATUS_CODES } from '..';
 export type ResolveResult<T> = (res: NextApiResponse<T>) => void | Promise<void>;
 
 /**
+ * Options used for `Results.redirect()`.
+ */
+export type RedirectOptions = { permanent?: boolean };
+
+/**
  * Represents a handler for a http response.
  */
 export abstract class Results<T = any> {
@@ -148,22 +153,21 @@ export abstract class Results<T = any> {
 
   /**
    * Creates a `Result` for a 204 (No Content) response.
-   * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 204 (No Content) response.
    */
-  static noContent(message?: string): Results {
-    return ResultWithStatusCode.create(204, message);
+  static noContent(): Results {
+    return ResultWithStatusCode.create(204);
   }
 
   /**
    * Creates a `Result` that redirect to the given uri.
    * @param uri The uri to redirect to.
-   * @param permanent Whether to redirect with a permanent status code or temporary.
+   * @param options Options used for redirect.
    * @returns A results that redirects to the given uri.
    */
-  static redirect(uri: string, { permanent }: { permanent: boolean }): Results {
+  static redirect(uri: string, options: RedirectOptions = {}): Results {
     return Results.fn((res) => {
-      const statusCode = permanent ? 308 : 307;
+      const statusCode = options.permanent === true ? 308 : 307;
       res.redirect(statusCode, uri);
     });
   }
@@ -257,6 +261,12 @@ class ResultWithStatusCode extends Results {
   }
 
   resolve(res: NextApiResponse<any>): void | Promise<void> {
+    // Special cases without response body
+    // https://nextjs.org/docs/messages/invalid-api-status-body
+    if (!this.message && (this.statusCode === 204 || this.statusCode === 304)) {
+      return res.status(this.statusCode).end();
+    }
+
     const text = this.message ?? (HTTP_STATUS_CODES as any)[this.statusCode];
     const statusCode = this.statusCode;
     sendText({ res, text, statusCode });
@@ -315,6 +325,7 @@ class ResultWithBuffer extends Results {
     res.setHeader('Content-Type', this.contentType);
     res.status(200);
     res.write(this.buffer);
+    res.end();
   }
 }
 

@@ -7,6 +7,11 @@ type ObjectType<T> = { new (...args: any[]): T };
 
 type QueryParams = Record<string, string | string[]>;
 
+// Copied from supertest
+type BrowserParser = (str: string) => any;
+type NodeParser = (res: supertest.Response, callback: (err: Error | null, body: any) => void) => void;
+type Parser = BrowserParser | NodeParser;
+
 /**
  * Represents a `SuperTest` instance that should be closed.
  */
@@ -69,4 +74,36 @@ function parseQuery(url?: string): QueryParams {
     }
     return acc;
   }, {} as QueryParams);
+}
+
+export namespace Parsers {
+  export function utf8Parser(): Parser {
+    return (res, cb) => {
+      res.setEncoding('utf8');
+      let buffer = '';
+
+      res.on('data', (chunk) => {
+        buffer += chunk;
+      });
+
+      res.on('end', () => {
+        cb(null, buffer);
+      });
+    };
+  }
+
+  export function binaryParser(): Parser {
+    return (res, cb) => {
+      res.setEncoding('binary');
+      const data: Buffer[] = [];
+      
+      res.on('data', (chunk) => {
+        data.push(Buffer.from(chunk, 'binary'));
+      });
+
+      res.on('end', () => {
+        cb(null, Buffer.concat(data));
+      });
+    };
+  }
 }
