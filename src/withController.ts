@@ -306,7 +306,8 @@ function getBasePath(options?: string | WithControllerOptions) {
   options = options == null ? {} : options;
 
   if (typeof options === 'string') {
-    return `/api/${options}`;
+    assertTrue(options == '' || options.startsWith('/'), `Base path must start with "/": ${options}`);
+    return `/api${options}`;
   }
 
   const dirname = options.dirname || getDirName();
