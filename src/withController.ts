@@ -360,6 +360,7 @@ type DoneHandler = (result: boolean | { error: any }) => void;
 // Run the actual middlewares
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
+  
   async function next(error?: any) {
     if (index === middlewares.length) {
       return done(error ? { error } : true);
