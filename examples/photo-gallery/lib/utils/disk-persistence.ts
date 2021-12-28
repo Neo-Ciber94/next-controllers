@@ -4,9 +4,17 @@ import path from 'path';
 
 export type UseDiskPersistence<T, TResult> = (data: T) => TResult;
 
+/**
+ * A persistence using the disk as storage.
+ */
 export class DiskPersistence<T extends object> implements Persistence<T> {
   constructor(readonly filepath: string, private readonly initialValue: T) {}
 
+  /**
+   * Executes a function using the stored data and then save the data.
+   * @param f The function to run with the stored data.
+   * @returns Returns the result of the executed function.
+   */
   async use<TResult>(f: UseDiskPersistence<T, TResult>): Promise<TResult> {
     // Loads the data from the file
     const data = await this.load();

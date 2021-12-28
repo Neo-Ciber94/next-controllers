@@ -1,4 +1,5 @@
 import {
+  Delete,
   Get,
   NextApiContext,
   Post,
@@ -10,6 +11,7 @@ import {
 import morgan from 'morgan';
 import multer from 'multer';
 import { DiskPersistence } from '../../../lib/utils/disk-persistence';
+import fs from 'fs/promises';
 
 const BASE_PATH = 'uploads/images/';
 const upload = multer({ dest: BASE_PATH });
@@ -40,7 +42,7 @@ type UploadPersistence = DiskPersistence<UploadState>;
 })
 class UploadController {
   @Post('/')
-   @UseMiddleware(upload.single('image'))
+  @UseMiddleware(upload.single('image'))
   upload({ state, request }: NextApiContext<UploadPersistence>) {
     const file = request.file;
 
@@ -48,7 +50,9 @@ class UploadController {
       throw new Error('No file to upload');
     }
 
-    console.log(JSON.stringify(request.body, null, 2));
+    if (!file.mimetype.includes('image')) {
+      throw new Error('Only images are supported');
+    }
 
     return state.use((uploadState) => {
       const id = ++uploadState.lastId;
@@ -65,7 +69,7 @@ class UploadController {
   }
 
   @Get('/:id')
-  async getPhoto({ state, request }: NextApiContext<UploadPersistence>) {
+  async getImage({ state, request }: NextApiContext<UploadPersistence>) {
     const uploadState = await state.load();
     const id = request.params.id;
 
@@ -81,6 +85,32 @@ class UploadController {
 
     const filePath = `${BASE_PATH}${fileInfo.fileName}`;
     return Results.file(filePath, fileInfo.mimetype);
+  }
+
+  @Delete('/:id')
+  async deleteImage({ state, request }: NextApiContext<UploadPersistence>) {
+    const id = request.params.id;
+
+    if (id == null) {
+      return Results.badRequest('No id provided');
+    }
+
+    const result = await state.use(async (uploadState) => {
+      const fileInfo = uploadState.files[id];
+
+      if (fileInfo) {
+        delete uploadState.files[id];
+        await fs.unlink(`${BASE_PATH}${fileInfo.fileName}`);
+      }
+
+      return fileInfo;
+    });
+
+    if (result == null) {
+      return Results.notFound('File not found');
+    }
+
+    return result;
   }
 }
 
