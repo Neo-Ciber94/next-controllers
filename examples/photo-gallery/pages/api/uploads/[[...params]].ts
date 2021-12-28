@@ -2,6 +2,7 @@ import {
   Delete,
   Get,
   NextApiContext,
+  OnError,
   Post,
   Results,
   RouteController,
@@ -12,9 +13,20 @@ import morgan from 'morgan';
 import multer from 'multer';
 import { DiskPersistence } from '../../../lib/utils/disk-persistence';
 import fs from 'fs/promises';
+import { UPLOAD_NAME, UPLOAD_PATH } from '../../../shared/config';
 
-const BASE_PATH = 'uploads/images/';
-const upload = multer({ dest: BASE_PATH });
+const multerOptions: multer.Options = {
+  dest: UPLOAD_PATH,
+  fileFilter: (_, file, cb) => {
+    if (file.mimetype.includes('image')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are supported'));
+    }
+  },
+};
+
+const upload = multer(multerOptions);
 
 // Let multer handle the body parsing
 export const config = {
@@ -36,22 +48,19 @@ type UploadState = {
 };
 
 type UploadPersistence = DiskPersistence<UploadState>;
+
 @UseMiddleware(morgan('dev'))
 @RouteController({
   state: new DiskPersistence<UploadState>('uploads/state.json', { lastId: 0, files: {} }),
 })
 class UploadController {
   @Post('/')
-  @UseMiddleware(upload.single('image'))
+  @UseMiddleware(upload.single(UPLOAD_NAME))
   upload({ state, request }: NextApiContext<UploadPersistence>) {
     const file = request.file;
 
     if (file == null) {
       throw new Error('No file to upload');
-    }
-
-    if (!file.mimetype.includes('image')) {
-      throw new Error('Only images are supported');
     }
 
     return state.use((uploadState) => {
@@ -83,7 +92,7 @@ class UploadController {
       return Results.notFound('File not found');
     }
 
-    const filePath = `${BASE_PATH}${fileInfo.fileName}`;
+    const filePath = `${UPLOAD_PATH}${fileInfo.fileName}`;
     return Results.file(filePath, fileInfo.mimetype);
   }
 
@@ -100,7 +109,7 @@ class UploadController {
 
       if (fileInfo) {
         delete uploadState.files[id];
-        await fs.unlink(`${BASE_PATH}${fileInfo.fileName}`);
+        await fs.unlink(`${UPLOAD_PATH}${fileInfo.fileName}`);
       }
 
       return fileInfo;
@@ -111,6 +120,13 @@ class UploadController {
     }
 
     return result;
+  }
+
+  @OnError()
+  onError(error: Error, { response }: NextApiContext<UploadPersistence>) {
+    const message = error.message || error;
+    response.statusCode = 500;
+    return { message }
   }
 }
 
