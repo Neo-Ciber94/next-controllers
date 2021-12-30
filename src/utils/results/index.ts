@@ -16,7 +16,7 @@ export type RedirectOptions = { permanent?: boolean };
 /**
  * Represents a handler for a http response.
  */
-export abstract class Results<T = any> {
+export abstract class Results<T = void> {
   /**
    * Sends a response.
    * @param res The response object.
@@ -28,9 +28,9 @@ export abstract class Results<T = any> {
    * @param resolve The function to execute.
    * @returns A result using the given function.
    */
-  static fn<T>(resolve: ResolveResult<T>): Results {
-    return new (class extends Results {
-      resolve(res: NextApiResponse): void | Promise<void> {
+  static fn<T>(resolve: ResolveResult<T>): Results<T> {
+    return new (class extends Results<T> {
+      resolve(res: NextApiResponse<T>): void | Promise<void> {
         return resolve(res);
       }
     })();
@@ -51,7 +51,7 @@ export abstract class Results<T = any> {
    * @returns A result for a text response.
    */
   static text(text: string): Results {
-    return Results.fn((res) => sendText({ res, text }));
+    return Results.fn((res) => sendMessage({ res, message: text }));
   }
 
   /**
@@ -119,7 +119,7 @@ export abstract class Results<T = any> {
    * @param message The custom message, if not specified, the default message is used.
    * @returns A result for a status code.
    */
-  static statusCode(statusCode: keyof typeof HTTP_STATUS_CODES, message?: string): Results {
+  static statusCode(statusCode: keyof typeof HTTP_STATUS_CODES, message?: object | string): Results {
     return new ResultWithStatusCode(statusCode, message);
   }
 
@@ -128,7 +128,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 200 (OK) response.
    */
-  static ok(message?: string): Results {
+  static ok(message?: object | string): Results {
     return ResultWithStatusCode.create(200, message);
   }
 
@@ -147,7 +147,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 202 (Accepted) response.
    */
-  static accepted(message?: string): Results {
+  static accepted(message?: object | string): Results {
     return ResultWithStatusCode.create(202, message);
   }
 
@@ -177,7 +177,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 400 (Bad Request) response.
    */
-  static badRequest(message?: string): Results {
+  static badRequest(message?: object | string): Results {
     return ResultWithStatusCode.create(400, message);
   }
 
@@ -186,7 +186,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 401 (Unauthorized) response.
    */
-  static unauthorized(message?: string): Results {
+  static unauthorized(message?: object | string): Results {
     return ResultWithStatusCode.create(401, message);
   }
 
@@ -195,7 +195,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 403 (Forbidden) response.
    */
-  static forbidden(message?: string): Results {
+  static forbidden(message?: object | string): Results {
     return ResultWithStatusCode.create(403, message);
   }
 
@@ -204,7 +204,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 404 (Not Found) response.
    */
-  static notFound(message?: string): Results {
+  static notFound(message?: object | string): Results {
     return ResultWithStatusCode.create(404, message);
   }
 
@@ -213,7 +213,7 @@ export abstract class Results<T = any> {
    * @param message A custom message, if not specified, the default message is used.
    * @returns A result for an 500 (Internal Server Error) response.
    */
-  static internalServerError(message?: string): Results {
+  static internalServerError(message?: object | string): Results {
     return ResultWithStatusCode.create(500, message);
   }
 }
@@ -241,11 +241,11 @@ export type ResultWithDownloadOptions = {
 class ResultWithStatusCode extends Results {
   private static cache = new Map<number, ResultWithStatusCode>();
 
-  constructor(private readonly statusCode: number, private readonly message?: string) {
+  constructor(private readonly statusCode: number, private readonly message?: object | string) {
     super();
   }
 
-  static create(statusCode: number, message?: string): ResultWithStatusCode {
+  static create(statusCode: number, message?: object | string): ResultWithStatusCode {
     if (message || !(statusCode in HTTP_STATUS_CODES)) {
       return new ResultWithStatusCode(statusCode, message);
     }
@@ -267,14 +267,14 @@ class ResultWithStatusCode extends Results {
       return res.status(this.statusCode).end();
     }
 
-    const text = this.message ?? (HTTP_STATUS_CODES as any)[this.statusCode];
+    const message = this.message ?? (HTTP_STATUS_CODES as any)[this.statusCode];
     const statusCode = this.statusCode;
-    sendText({ res, text, statusCode });
+    sendMessage({ res, message, statusCode });
   }
 }
 
 class ResultWithStatusCodeCreated extends Results {
-  constructor(private readonly obj: any, private readonly uri: string) {
+  constructor(private readonly obj: unknown, private readonly uri: string) {
     super();
   }
 
@@ -341,8 +341,21 @@ class ResultWithStream extends Results {
   }
 }
 
-function sendText(options: { res: NextApiResponse<any>; text: string; statusCode?: number; encoding?: string }): void {
-  const { res, text, statusCode, encoding = 'utf-8' } = options;
-  res.setHeader('Content-Type', `text/plain; charset=${encoding}`);
-  res.status(statusCode ?? 200).send(text);
+function sendMessage(options: {
+  res: NextApiResponse<any>;
+  message: object | string;
+  statusCode?: number;
+  encoding?: string;
+}): void {
+  const { res, message, statusCode, encoding = 'utf-8' } = options;
+
+  if (typeof message === 'object') {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(statusCode ?? 200);
+    res.send(JSON.stringify(message, null, 2));
+  } else {
+    res.setHeader('Content-Type', `text/plain; charset=${encoding}`);
+    res.status(statusCode ?? 200);
+    res.send(message);
+  }
 }

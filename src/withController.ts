@@ -1,3 +1,4 @@
+import { ServerResponse } from 'http';
 import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 import {
@@ -360,14 +361,21 @@ type DoneHandler = (result: boolean | { error: any }) => void;
 // Run the actual middlewares
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
   let index = 0;
-  
+
   async function next(error?: any) {
+    let wasPiped = false;
+
     if (index === middlewares.length) {
       return done(error ? { error } : true);
     }
 
+    if (process.env.NODE_ENV !== 'production') {
+      // listen for pipe event and don't show resolve warning
+      res.once('pipe', () => (wasPiped = true));
+    }
+
     const middleware = wrapMiddleware(middlewares[index++]);
-    const lastIndex = index;
+    // const lastIndex = index;
 
     try {
       await middleware(error, req, res, next);
@@ -375,13 +383,21 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
       await next(e);
     }
 
-    // If the middleware has not called next, exits the loop
-    if (lastIndex === index) {
+    if (!isResSent(res) && !wasPiped) {
       return done(false);
     }
+
+    // If the middleware has not called next, exits the loop
+    // if (lastIndex === index) {
+    //   return done(false);
+    // }
   }
 
   next();
+}
+
+function isResSent(res: ServerResponse) {
+  return res.writableEnded || res.headersSent;
 }
 
 // Wraps the middleware into a error middleware, just for simplicity

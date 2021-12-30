@@ -1,6 +1,7 @@
 import {
   Delete,
   Get,
+  Middleware,
   NextApiContext,
   OnError,
   Post,
@@ -13,7 +14,7 @@ import morgan from 'morgan';
 import multer from 'multer';
 import { DiskPersistence } from '../../../lib/utils/disk-persistence';
 import fs from 'fs/promises';
-import { UPLOAD_NAME, UPLOAD_PATH } from '../../../shared/config';
+import { UPLOAD_NAME, UPLOAD_PATH } from '../../../shared';
 
 const multerOptions: multer.Options = {
   dest: UPLOAD_PATH,
@@ -27,6 +28,10 @@ const multerOptions: multer.Options = {
 };
 
 const upload = multer(multerOptions);
+
+const hang: Middleware<any, any> = async () => {
+  /* Nothing */
+};
 
 // Let multer handle the body parsing
 export const config = {
@@ -49,7 +54,7 @@ type UploadState = {
 
 type UploadPersistence = DiskPersistence<UploadState>;
 
-@UseMiddleware(morgan('dev'))
+@UseMiddleware(morgan('dev'), hang)
 @RouteController({
   state: new DiskPersistence<UploadState>('uploads/state.json', { lastId: 0, files: {} }),
 })
@@ -123,10 +128,9 @@ class UploadController {
   }
 
   @OnError()
-  onError(error: Error, { response }: NextApiContext<UploadPersistence>) {
+  onError(error: Error) {
     const message = error.message || error;
-    response.statusCode = 500;
-    return { message }
+    return Results.internalServerError({ message });
   }
 }
 
