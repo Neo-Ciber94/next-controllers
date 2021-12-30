@@ -8,14 +8,9 @@ export namespace PromiseUtils {
 
       if (isPromise(result)) {
         result
-          .then((x) => {
-            clearTimeout(timer);
-            resolve(x);
-          })
-          .catch((err) => {
-            clearTimeout(timer);
-            reject(err);
-          });
+          .then(resolve)
+          .catch(reject)
+          .finally(() => clearTimeout(timer));
       }
     });
   }

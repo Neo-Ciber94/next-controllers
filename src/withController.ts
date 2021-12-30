@@ -17,7 +17,7 @@ import {
   ErrorMiddleware,
 } from '.';
 import { ErrorHandlerInterface } from './interfaces/error-handler';
-import { assertTrue, getStackFrame, HTTP_STATUS_CODES, Results } from './utils';
+import { assertTrue, getStackFrame, HTTP_STATUS_CODES, PromiseUtils, Results, TimeoutError } from './utils';
 
 type ContextApiHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => any | Promise<any>;
 
@@ -360,31 +360,26 @@ type DoneHandler = (result: boolean | { error: any }) => void;
 
 // Run the actual middlewares
 function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
+  const TIMEOUT = 5000; // 5 seconds
   let index = 0;
 
   async function next(error?: any) {
-    let wasPiped = false;
-
     if (index === middlewares.length) {
       return done(error ? { error } : true);
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-      // listen for pipe event and don't show resolve warning
-      res.once('pipe', () => (wasPiped = true));
     }
 
     const middleware = wrapMiddleware(middlewares[index++]);
     // const lastIndex = index;
 
     try {
-      await middleware(error, req, res, next);
+      // We timeout the middleware execution to give NextJS the control when timeout
+      await PromiseUtils.timeout(TIMEOUT, () => middleware(error, req, res, next));
     } catch (e) {
-      await next(e);
-    }
-
-    if (!isResSent(res) && !wasPiped) {
-      return done(false);
+      if (e instanceof TimeoutError) {
+        done(false);
+      } else {
+        await next(e);
+      }
     }
 
     // If the middleware has not called next, exits the loop
@@ -394,10 +389,6 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
   }
 
   next();
-}
-
-function isResSent(res: ServerResponse) {
-  return res.writableEnded || res.headersSent;
 }
 
 // Wraps the middleware into a error middleware, just for simplicity
