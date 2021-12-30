@@ -10,23 +10,11 @@ import {
   withController,
 } from 'next-controllers';
 import morgan from 'morgan';
-import multer from 'multer';
 import { DiskPersistence } from '../../../lib/utils/disk-persistence';
 import fs from 'fs/promises';
 import { UPLOAD_NAME, UPLOAD_PATH } from '../../../shared';
-
-const multerOptions: multer.Options = {
-  dest: UPLOAD_PATH,
-  fileFilter: (_, file, cb) => {
-    if (file.mimetype.includes('image')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only images are supported'));
-    }
-  },
-};
-
-const upload = multer(multerOptions);
+import { upload } from '../../../lib/middlewares/upload';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // Let multer handle the body parsing
 export const config = {
@@ -51,7 +39,7 @@ type UploadPersistence = DiskPersistence<UploadState>;
 
 @UseMiddleware(morgan('dev'))
 @RouteController({
-  state: new DiskPersistence<UploadState>('uploads/state.json', { lastId: 0, files: {} }),
+  state: new DiskPersistence<UploadState>('data/state.json', { lastId: 0, files: {} }),
 })
 class UploadController {
   @Post('/')
@@ -75,6 +63,21 @@ class UploadController {
       uploadState.files[id] = newFile;
       return newFile;
     });
+  }
+
+  @Get('/')
+  async getAllImages({ state }: NextApiContext<UploadPersistence>) {
+    const uploadState = await state.load();
+    const files: string[] = [];
+
+    for (const file of Object.values(uploadState.files)) {
+      if (file != null) {
+        const filePath = `${UPLOAD_PATH}${file.fileName}`;
+        files.push(filePath);
+      }
+    }
+
+    return files;
   }
 
   @Get('/:id')
@@ -130,3 +133,9 @@ class UploadController {
 }
 
 export default withController(UploadController);
+
+// export default function handler(req: NextApiRequest, res: NextApiResponse) {
+//   return res.json({
+//     name: "John Doe",
+//   })
+// }

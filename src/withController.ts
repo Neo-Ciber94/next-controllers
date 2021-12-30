@@ -321,7 +321,8 @@ function getBasePath(options?: string | WithControllerOptions) {
     return `/api${options}`;
   }
 
-  const dirname = options.dirname || getDirName();
+  const stringPath = options.dirname || getDirName();
+  const dirname = path.normalize(stringPath);
   const segments = dirname.split(path.sep);
   const apiIdx = segments.indexOf('api');
 
