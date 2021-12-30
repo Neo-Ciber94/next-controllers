@@ -1,7 +1,6 @@
 import {
   Delete,
   Get,
-  Middleware,
   NextApiContext,
   OnError,
   Post,
@@ -29,10 +28,6 @@ const multerOptions: multer.Options = {
 
 const upload = multer(multerOptions);
 
-const hang: Middleware<any, any> = async () => {
-  /* Nothing */
-};
-
 // Let multer handle the body parsing
 export const config = {
   api: {
@@ -54,7 +49,7 @@ type UploadState = {
 
 type UploadPersistence = DiskPersistence<UploadState>;
 
-@UseMiddleware(morgan('dev'), hang)
+@UseMiddleware(morgan('dev'))
 @RouteController({
   state: new DiskPersistence<UploadState>('uploads/state.json', { lastId: 0, files: {} }),
 })
