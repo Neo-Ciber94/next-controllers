@@ -19,6 +19,8 @@ import {
 import { ErrorHandlerInterface } from './interfaces/error-handler';
 import { assertTrue, getStackFrame, HTTP_STATUS_CODES, PromiseUtils, Results, TimeoutError } from './utils';
 
+const MIDDLEWARE_TIMEOUT = 5000;
+
 type ContextApiHandler<Req, Res> = (context: HttpContext<any, Req, Res>) => any | Promise<any>;
 
 type ApiHandler<Req, Res> = (req: Req, res: Res) => Promise<any>;
@@ -53,6 +55,15 @@ export interface WithControllerOptions {
    * The default is `true`.
    */
   decodeQueryParams?: boolean;
+
+  /**
+   * Timeout for the middlewares. Default is 5 seconds.
+   *
+   * This time is used to check if the middleware don't called `next()`
+   * and return the control to NextJS, this timeout doesn't prevent
+   * a stalled request.
+   */
+  middlewareTimeout?: number | null;
 }
 
 /**
@@ -93,9 +104,9 @@ export function withController<
   const controllerMiddlewares = allMiddlewares.filter((m) => m.methodName == null).map((m) => m.handler);
   let shouldDecodeQueryParams = false;
 
-  if (typeof options === 'object') {
-    shouldDecodeQueryParams = options.decodeQueryParams === undefined || options.decodeQueryParams === true;
-  }
+  // `withController` options
+  const opts = optionsOrEmpty(options);
+  shouldDecodeQueryParams = opts.decodeQueryParams === undefined || opts.decodeQueryParams === true;
 
   // prettier-ignore
   const controllerConfig = metadataStore.getController(target)?.config || DEFAULT_CONTROLLER_CONFIG;
@@ -209,14 +220,13 @@ export function withController<
     }
 
     try {
-      /* prettier-ignore */
       // Run the controller middlewares
-      if ((await runMiddlewares(req, res, controllerMiddlewares)) === false || res.writableEnded || res.writableFinished) {
+      if ((await runMiddlewares(opts, req, res, controllerMiddlewares)) === false || isResEnded(res)) {
         return;
       }
 
       // Run the route middlewares
-      if ((await runMiddlewares(req, res, route.middlewares)) === false || res.writableEnded || res.writableFinished) {
+      if ((await runMiddlewares(opts, req, res, route.middlewares)) === false || isResEnded(res)) {
         return;
       }
 
@@ -260,7 +270,7 @@ function findRoute<Req extends NextApiRequestWithParams>(
 
 async function sendResponse<Res extends NextApiResponse>(response: Res, config: RouteControllerConfig, value: unknown) {
   // A response was already written
-  if (response.writableEnded || response.writableFinished) {
+  if (isResEnded(response)) {
     return;
   }
 
@@ -346,21 +356,34 @@ function decodeQueryParams(req: NextApiRequest) {
 }
 
 /// This returns `true` if can continue and `false` or an error if cannot continue.
-function runMiddlewares(req: any, res: any, middlewares: MiddlewareHandler<any, any>[]): Promise<boolean> {
+function runMiddlewares(
+  options: WithControllerOptions,
+  req: any,
+  res: any,
+  middlewares: MiddlewareHandler<any, any>[],
+): Promise<boolean> {
   if (middlewares.length === 0) {
     return Promise.resolve(true);
   }
 
   return new Promise((resolve, reject) => {
-    handle(req, res, middlewares, (result) => (typeof result === 'boolean' ? resolve(result) : reject(result.error)));
+    handle(options, req, res, middlewares, (result) =>
+      typeof result === 'boolean' ? resolve(result) : reject(result.error),
+    );
   });
 }
 
 type DoneHandler = (result: boolean | { error: any }) => void;
 
 // Run the actual middlewares
-function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], done: DoneHandler) {
-  const TIMEOUT = 5000; // 5 seconds
+function handle(
+  options: WithControllerOptions,
+  req: any,
+  res: any,
+  middlewares: MiddlewareHandler<any, any>[],
+  done: DoneHandler,
+) {
+  const timeout = options.middlewareTimeout === undefined ? MIDDLEWARE_TIMEOUT : options.middlewareTimeout;
   let index = 0;
 
   async function next(error?: any) {
@@ -369,11 +392,14 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
     }
 
     const middleware = wrapMiddleware(middlewares[index++]);
-    // const lastIndex = index;
 
     try {
       // We timeout the middleware execution to give NextJS the control when timeout
-      await PromiseUtils.timeout(TIMEOUT, () => middleware(error, req, res, next));
+      if (timeout != null) {
+        await PromiseUtils.timeout(timeout, () => middleware(error, req, res, next));
+      } else {
+        await middleware(error, req, res, next);
+      }
     } catch (e) {
       if (e instanceof TimeoutError) {
         done(false);
@@ -381,11 +407,6 @@ function handle(req: any, res: any, middlewares: MiddlewareHandler<any, any>[], 
         await next(e);
       }
     }
-
-    // If the middleware has not called next, exits the loop
-    // if (lastIndex === index) {
-    //   return done(false);
-    // }
   }
 
   next();
@@ -407,4 +428,12 @@ function wrapMiddleware(middleware: MiddlewareHandler<any, any>): ErrorMiddlewar
       }
     }
   };
+}
+
+function optionsOrEmpty(config?: WithControllerOptions | string): WithControllerOptions {
+  return config == null || typeof config === 'string' ? {} : config;
+}
+
+function isResEnded(res: ServerResponse) {
+  return res.writableEnded || res.writableFinished;
 }
