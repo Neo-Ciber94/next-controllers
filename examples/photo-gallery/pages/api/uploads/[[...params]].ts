@@ -12,9 +12,9 @@ import {
 import morgan from 'morgan';
 import { DiskPersistence } from '../../../lib/utils/disk-persistence';
 import fs from 'fs/promises';
-import { UPLOAD_NAME, UPLOAD_PATH } from '../../../shared';
+import { UPLOAD_NAME, UPLOAD_PATH, URL_PATH } from '../../../shared';
 import { upload } from '../../../lib/middlewares/upload';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { UploadState, UploadPersistence, FileInfo, FileDetails } from '../../../lib/models/types';
 
 // Let multer handle the body parsing
 export const config = {
@@ -22,20 +22,6 @@ export const config = {
     bodyParser: false,
   },
 };
-
-type FileInfo = {
-  id: number;
-  originalname: string;
-  fileName: string;
-  mimetype: string;
-};
-
-type UploadState = {
-  lastId: number;
-  files: Record<string, FileInfo | undefined>;
-};
-
-type UploadPersistence = DiskPersistence<UploadState>;
 
 @UseMiddleware(morgan('dev'))
 @RouteController({
@@ -66,14 +52,18 @@ class UploadController {
   }
 
   @Get('/')
-  async getAllImages({ state }: NextApiContext<UploadPersistence>) {
+  async getAllImages({ state }: NextApiContext<UploadPersistence>): Promise<FileDetails[]> {
     const uploadState = await state.load();
-    const files: string[] = [];
+    const files: FileDetails[] = [];
 
     for (const file of Object.values(uploadState.files)) {
       if (file != null) {
-        const filePath = `${UPLOAD_PATH}${file.fileName}`;
-        files.push(filePath);
+        const url = `${URL_PATH}${file.fileName}`;
+        files.push({
+          id: file.id,
+          fileName: file.originalname,
+          url,
+        });
       }
     }
 
@@ -133,9 +123,3 @@ class UploadController {
 }
 
 export default withController(UploadController);
-
-// export default function handler(req: NextApiRequest, res: NextApiResponse) {
-//   return res.json({
-//     name: "John Doe",
-//   })
-// }

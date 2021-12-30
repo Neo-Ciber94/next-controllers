@@ -17,7 +17,7 @@ import {
   ErrorMiddleware,
 } from '.';
 import { ErrorHandlerInterface } from './interfaces/error-handler';
-import { assertTrue, getStackFrame, HTTP_STATUS_CODES, PromiseUtils, Results, TimeoutError } from './utils';
+import { assertTrue, getFrames, HTTP_STATUS_CODES, PromiseUtils, Results, TimeoutError } from './utils';
 
 const MIDDLEWARE_TIMEOUT = 5000;
 
@@ -339,9 +339,27 @@ function getBasePath(options?: string | WithControllerOptions) {
 }
 
 function getDirName(): string {
-  const frame = getStackFrame(1);
-  const dirname = path.dirname(frame.file || '');
-  return dirname;
+  const frames = getFrames();
+
+  for (let i = 0; i < frames.length; i++) {
+    const frame = frames[i];
+
+    // The previous frame before the `withController` call
+    // is where the route controller is defined
+    if (frame.methodName === withController.name) {
+      if (i === 0) {
+        break;
+      }
+
+      const prevFrame = frames[i - 1];
+      const dirName = path.dirname(prevFrame.file || '');
+      return dirName;
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.error('Cannot find controller file path');
+  return '';
 }
 
 function decodeQueryParams(req: NextApiRequest) {
