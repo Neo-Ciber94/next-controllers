@@ -1,0 +1,36 @@
+.file-upload input[type='file'] {
+  width: 0.1px;
+  height: 0.1px;
+  position: absolute;
+  opacity: 0;
+}
+
+.file-upload label {
+  background-color: red;
+  color: white;
+  display: inline-block;
+  width: 300px;
+  text-align: center;
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-upload .icon {
+  position: relative;
+  margin-right: 40px;
+}
+
+.file-upload .icon > * {
+    position: absolute;
+    bottom: 1px;
+}
+
+.file-upload label:hover {
+  background-color: #ff5858;
+}

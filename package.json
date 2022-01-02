@@ -25,7 +25,8 @@
     "watch": "npm-watch",
     "build:dev": "tsc",
     "build:prod": "npm run clean && tsc -p tsconfig.prod.json",
-    "clean": "rimraf ./build"
+    "clean": "rimraf ./build",
+    "example": "npx ts-node ./scripts/run-example.ts"
   },
   "watch": {
     "build:dev": {
@@ -50,6 +51,7 @@
     "@types/node": "16.11.7",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
+    "chalk": "^5.0.0",
     "eslint": "^7.32.0",
     "jest": "^27.4.5",
     "npm-watch": "^0.11.0",
