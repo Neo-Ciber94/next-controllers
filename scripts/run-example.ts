@@ -2,11 +2,7 @@
 import { argv } from 'process';
 import os from 'os';
 import { spawn } from 'child_process';
-
-// import('chalk').then((c) => {
-//     console.log("import chalk");
-//     console.log("Imported: ", c.default.red("Oh oh!!!"))
-// });
+import chalk from 'chalk';
 
 const [projectName] = argv.slice(2);
 
@@ -27,10 +23,10 @@ if (os.platform() === 'win32') {
 const childProccess = spawn(cmd, ['run', 'dev'], { cwd: exampleDir, stdio: 'inherit' });
 
 childProccess.once('spawn', () => console.log(`Running example "${projectName}"...`));
-// childProccess.on('error', (err) => {
-//   const message = chalk.red(`Error running example "${projectName}": ${err.message}`);
-//   console.error(message);
-// });
+childProccess.on('error', () => {
+  const message = chalk.red(`Cannot find the project "${projectName}"`);
+  console.error(message);
+});
 
 process.on('SIGINT', () => {
   console.log(`\nExited example "${projectName}"`);
