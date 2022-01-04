@@ -10,11 +10,12 @@ import {
   withController,
 } from 'next-controllers';
 import morgan from 'morgan';
-import { DiskPersistence } from '../../../lib/utils/disk-persistence';
+import { DiskPersistence } from '../../../server/utils/disk-persistence';
 import fs from 'fs/promises';
 import { UPLOAD_NAME, UPLOAD_PATH, URL_PATH } from '../../../shared';
-import { upload } from '../../../lib/middlewares/upload';
-import { UploadState, UploadPersistence, FileInfo, FileDetails } from '../../../lib/models/types';
+import { upload } from '../../../server/middlewares/upload';
+import { UploadState, UploadPersistence, FileInfo } from '../../../server/models/types';
+import { FileDetails } from '../../../shared/types';
 
 // Let multer handle the body parsing
 export const config = {

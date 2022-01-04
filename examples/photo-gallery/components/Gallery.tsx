@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { FC } from 'react';
-import { FileDetails } from '../lib/models/types';
+import { FileDetails } from '../shared/types';
 
 export interface GalleryProps {
   files: FileDetails[];
