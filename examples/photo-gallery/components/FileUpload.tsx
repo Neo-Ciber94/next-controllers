@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { FaUpload, FaImage } from 'react-icons/fa';
+import { FaUpload, FaImage, FaSync } from 'react-icons/fa';
 
 export interface FileUploadProps {
   onFile: (file: File) => void;
@@ -10,13 +10,15 @@ export const FileUpload: FC<FileUploadProps> = ({ onFile }) => {
 
   return (
     <div className="file-upload">
-      <label htmlFor="file-input" title={file?.name}>
-        <span className="icon">
-          {!file && <FaUpload style={{ margin: '0 10px' }} />}
-          {file && <FaImage style={{ margin: '0 10px' }} />}
-        </span>
-        {file ? file.name : 'Select file'}
-      </label>
+      {file && <div className="file-name" title={file.name}>{file.name}</div>}
+      {!file && <label htmlFor="file-input">Select file</label>}
+      {file && (
+        <button className="file-reset" onClick={() => setFile(null)}>
+          Reset
+        </button>
+      )}
+
+      {/* Hidden */}
       <input
         id="file-input"
         type="file"

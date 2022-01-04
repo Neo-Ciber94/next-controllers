@@ -1,3 +1,20 @@
+:root {
+  --file-input-size: 300px;
+  --file-input-height: 45px;
+}
+
+.file-upload {
+  width: var(--file-input-size);
+  height: var(--file-input-height);
+  white-space: nowrap;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.3);
+}
+
 .file-upload input[type='file'] {
   width: 0.1px;
   height: 0.1px;
@@ -6,31 +23,48 @@
 }
 
 .file-upload label {
+  width: var(--file-input-size);
+  padding: 10px;
+  border-radius: 5px;
   background-color: red;
   color: white;
   display: inline-block;
-  width: 300px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.file-upload .file-name {
+  width: var(--file-input-size);
+  height: var(--file-input-height);
   text-align: center;
   padding: 10px;
-  font-size: 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  background-color: white;
+  color: black;
+  border-radius: 5px 0 0 5px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.file-upload .icon {
-  position: relative;
-  margin-right: 40px;
+.file-name::selection {
+  color: white;
+  background-color: red;
 }
 
-.file-upload .icon > * {
-    position: absolute;
-    bottom: 1px;
+.file-upload .file-reset {
+  border-radius: 0 5px 5px 0;
+  height: var(--file-input-height);
+  background-color: red;
+  color: white;
+  cursor: pointer;
+  padding: 10px 20px;
+  border: none;
+  outline: none;
 }
 
 .file-upload label:hover {
+  background-color: #ff5858;
+}
+
+.file-upload .file-reset:hover {
   background-color: #ff5858;
 }

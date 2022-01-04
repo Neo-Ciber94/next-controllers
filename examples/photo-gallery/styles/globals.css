@@ -13,3 +13,12 @@ body {
 .container {
   padding: 20px;
 }
+
+.btn {
+  height: 45px;
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
