@@ -30,5 +30,5 @@ childProccess.on('error', () => {
 
 process.on('SIGINT', () => {
   console.log(`\nExited example "${projectName}"`);
-  process.exit();
+  childProccess.kill('SIGINT');
 });
