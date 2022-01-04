@@ -1,0 +1,22 @@
+@tailwind components;
+
+@layer components {
+  .btn {
+    @apply outline-none px-4 py-2 inline-block text-center cursor-pointer shadow-md;
+  }
+
+  .btn-rounded {
+    @apply outline-none rounded-lg px-4 py-2 inline-block text-center cursor-pointer shadow-md;
+  }
+
+  .file-name {
+    @apply px-4 py-2 overflow-hidden text-ellipsis whitespace-nowrap text-center text-black bg-white;
+  }
+}
+
+.file-upload input[type='file'] {
+  width: 0.1px;
+  height: 0.1px;
+  position: absolute;
+  opacity: 0;
+}

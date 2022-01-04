@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import '../styles/custom.css'
 import '../styles/FileUpload.css'
 import type { AppProps } from 'next/app'
 
