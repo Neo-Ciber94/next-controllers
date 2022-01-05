@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import { FormEvent, useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
-import { FaUpload } from 'react-icons/fa';
+import { FaUpload, FaRegImages } from 'react-icons/fa';
 import { fetcher } from '../client/fetcher';
 import { FileDetails } from '../shared/types';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -50,6 +50,11 @@ const Home: NextPage = () => {
 
   return (
     <div className="container mx-auto pt-2 p-1 md:p-4 lg:p-6">
+      <h1 className="flex flex-row gap-2 my-2 text-4xl font-bold text-red-600 text-shadow-md select-none cursor-pointer">
+        <FaRegImages />
+        <span>Photo Gallery</span>
+      </h1>
+      <hr className="my-3 text-white opacity-20" />
       <div className="mb-3">
         <form
           encType="multiplart/form-data"
