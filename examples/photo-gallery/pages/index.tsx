@@ -51,7 +51,7 @@ const Home: NextPage = () => {
 
   return (
     <div className="container mx-auto pt-2 p-1 md:p-4 lg:p-6">
-      <h1 className="flex flex-row gap-2 my-2 text-4xl font-bold text-red-600 text-shadow-md select-none cursor-pointer">
+      <h1 className="flex flex-row gap-2 my-2 text-[calc(5vw+10px)] sm:text-4xl font-bold text-red-600 text-shadow-md select-none cursor-pointer">
         <FaRegImages />
         <span>
           <Letters text="Photo Gallery" letterClassName="text-red-600 hover:text-white transition-all" />
