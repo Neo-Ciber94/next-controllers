@@ -1,7 +1,9 @@
-export function assertTrue(condition: unknown, message = 'Assertion failed') {
+export function assertTrue(condition: unknown, message = 'Assertion failed'): condition is true {
   if (!condition) {
     throw new Error(message);
   }
+
+  return true;
 }
 
 export function repeat<T>(value: T | Array<T>, count: number): T[] {

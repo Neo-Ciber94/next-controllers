@@ -1,3 +1,5 @@
+import { FetchError } from './fetch-error';
+
 export type QueryParams = {
   [key: string]: string | number | boolean;
 };
@@ -55,7 +57,7 @@ export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> 
   const res = await fetch(url, init);
 
   if (!res.ok) {
-    throw new Error(`${res.status}: ${res.statusText}`);
+    throw new FetchError(res);
   }
 
   return await res.json();

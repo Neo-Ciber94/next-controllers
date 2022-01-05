@@ -1,5 +1,5 @@
 import type { NextPage } from 'next';
-import { FormEvent, FormEventHandler, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FaUpload } from 'react-icons/fa';
 import { fetcher } from '../client/fetcher';

@@ -16,6 +16,7 @@ import { UPLOAD_NAME, UPLOAD_PATH, URL_PATH } from '../../../shared';
 import { upload } from '../../../server/middlewares/upload';
 import { UploadState, UploadPersistence, FileInfo } from '../../../server/models/types';
 import { FileDetails } from '../../../shared/types';
+import { ValidationError } from '../../../server/utils/validation-error';
 
 // Let multer handle the body parsing
 export const config = {
@@ -35,7 +36,7 @@ class UploadController {
     const file = request.file;
 
     if (file == null) {
-      throw new Error('No file to upload');
+      return Results.badRequest('No file to upload');
     }
 
     return state.use((uploadState) => {
@@ -119,7 +120,12 @@ class UploadController {
   @OnError()
   onError(error: Error) {
     const message = error.message || error;
-    return Results.internalServerError({ message });
+
+    if (error instanceof ValidationError) {
+      return Results.badRequest(message);
+    }
+
+    return Results.internalServerError(message);
   }
 }
 
