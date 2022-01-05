@@ -57,7 +57,8 @@ export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> 
   const res = await fetch(url, init);
 
   if (!res.ok) {
-    throw new FetchError(res);
+    // throw new FetchError(res);
+    throw new Error(res.statusText);
   }
 
   return await res.json();

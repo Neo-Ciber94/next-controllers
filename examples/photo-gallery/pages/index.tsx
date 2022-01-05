@@ -17,15 +17,13 @@ const Home: NextPage = () => {
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError, error } = useQuery(API_URL, () => filesApi<FileDetails[]>());
+  const { data, isLoading, ...query } = useQuery(API_URL, () => filesApi<FileDetails[]>());
   const deleteFile = useMutation<FileDetails, null, FileDetails>({
-    useErrorBoundary: true,
     mutationFn: (f) => filesApi.delete<FileDetails>(f.id),
     onSuccess: () => queryClient.invalidateQueries(API_URL),
   });
 
   const uploadFile = useMutation<FileDetails, null, File>({
-    useErrorBoundary: true,
     mutationFn: (file) => {
       const formData = new FormData();
       formData.append(UPLOAD_NAME, file);
@@ -34,12 +32,13 @@ const Home: NextPage = () => {
     onSuccess: () => queryClient.invalidateQueries(API_URL),
   });
 
-  const hasMutationError = deleteFile.isError || uploadFile.isError;
-  const mutationError = deleteFile.error || uploadFile.error;
+  const isError = query.isError || uploadFile.isError || deleteFile.isError;
+  const error = query.error || uploadFile.error || deleteFile.error;
 
   const handleFile = (file: File) => setFileUpload(file);
   const handleReset = () => setFileUpload(null);
   const handleDelete = (file: FileDetails) => deleteFile.mutate(file);
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     assertTrue(fileUpload, 'File upload is not set');
@@ -63,8 +62,7 @@ const Home: NextPage = () => {
       </div>
 
       {isLoading && <p className="text-white text-xl">Loading...</p>}
-      {isError && <p className="text-red-500 text-xl">Error : {error}</p>}
-      {hasMutationError && <p className="text-red-500 text-xl">Error : {mutationError}</p>}
+      {isError && <p className="text-red-600 text-xl">Error : {errorMessage(error)}</p>}
       {data && <Gallery files={data} onDelete={handleDelete}></Gallery>}
     </div>
   );
@@ -82,5 +80,17 @@ const UploadButton: React.FC<ButtonProps> = (props) => (
     </span>
   </button>
 );
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if ((error as any).error) {
+    return (error as any).error + '';
+  }
+
+  return error + '';
+}
 
 export default Home;

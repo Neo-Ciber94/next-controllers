@@ -19,5 +19,11 @@ export class FetchError extends Error {
       this.status = statusOrResponse.status;
       this.statusText = statusText!;
     }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, FetchError);
+    }
   }
 }
