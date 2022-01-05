@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Gallery } from '../components/Gallery';
 import { UPLOAD_NAME } from '../shared';
 import { assertTrue } from '../shared/utils';
+import { Letters } from '../components/Letters';
 
 const API_URL = '/api/uploads';
 
@@ -52,7 +53,9 @@ const Home: NextPage = () => {
     <div className="container mx-auto pt-2 p-1 md:p-4 lg:p-6">
       <h1 className="flex flex-row gap-2 my-2 text-4xl font-bold text-red-600 text-shadow-md select-none cursor-pointer">
         <FaRegImages />
-        <span>Photo Gallery</span>
+        <span>
+          <Letters text="Photo Gallery" letterClassName="text-red-600 hover:text-white transition-all" />
+        </span>
       </h1>
       <hr className="my-3 text-white opacity-20" />
       <div className="mb-3">
