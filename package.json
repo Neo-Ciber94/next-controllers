@@ -1,7 +1,6 @@
 {
   "name": "next-controllers",
   "description": "An api for create routing controllers in nextjs",
-  "type": "module",
   "version": "0.1.13",
   "license": "MIT",
   "main": "build/index.js",
@@ -27,7 +26,7 @@
     "build:dev": "tsc",
     "build:prod": "npm run clean && tsc -p tsconfig.prod.json",
     "clean": "rimraf ./build",
-    "example": "cross-env TS_NODE_PROJECT=\"tsconfig.node.json\" node --experimental-loader ts-node/esm  ./scripts/run-example.ts"
+    "example": "node ./scripts/run-example.mjs"
   },
   "watch": {
     "build:dev": {
