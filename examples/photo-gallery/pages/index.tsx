@@ -9,7 +9,6 @@ import { Gallery } from '../components/Gallery';
 import { UPLOAD_NAME } from '../shared';
 import { assertTrue } from '../shared/utils';
 import { Letters } from '../components/Letters';
-import { FetchError } from '../client/fetch-error';
 
 const API_URL = '/api/uploads';
 
