@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import '../styles/custom.css';
+import '../styles/animations.css';
 import type { AppProps } from 'next/app';
 import { QueryClient, QueryClientProvider } from 'react-query';
 

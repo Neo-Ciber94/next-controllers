@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, CSSProperties } from 'react';
 import { BASE_URL } from '../shared';
 import { FileDetails } from '../shared/types';
 import { FaTimes, FaInfoCircle } from 'react-icons/fa';
@@ -28,22 +28,27 @@ export const Gallery: FC<GalleryProps> = ({ files, onDelete }) => {
 
   return (
     <div className="p-1 md:p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {files.map((file) => (
-        <GalleryItem key={file.id} file={file} deleting={deleting} onDelete={() => handleDelete(file)} />
+      {files.map((file, index) => (
+        <GalleryItem key={file.id} index={index} file={file} deleting={deleting} onDelete={() => handleDelete(file)} />
       ))}
     </div>
   );
 };
 
 interface GalleryItemProps {
-  deleting: FileDetails | null;
+  index: number;
   file: FileDetails;
+  deleting: FileDetails | null;
   onDelete: () => void;
 }
 
-const GalleryItem: React.FC<GalleryItemProps> = ({ file, deleting, onDelete }) => {
+const GalleryItem: React.FC<GalleryItemProps> = ({ index, file, deleting, onDelete }) => {
+  const delayed: CSSProperties = {
+    animationDelay: `${index * 0.1}s`,
+  };
+
   return (
-    <div key={file.id} className="relative rounded-lg overflow-hidden shadow-md w-full h-[400px]">
+    <div style={delayed} className="relative rounded-lg overflow-hidden shadow-md w-full h-[400px] animate-fade-grow">
       <button
         onClick={(e) => {
           e.stopPropagation();
