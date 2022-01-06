@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { BASE_URL } from '../shared';
 import { FileDetails } from '../shared/types';
 import { FaTimes, FaInfoCircle } from 'react-icons/fa';
@@ -11,6 +11,12 @@ export interface GalleryProps {
 
 export const Gallery: FC<GalleryProps> = ({ files, onDelete }) => {
   const [deleting, setDeleting] = useState<FileDetails | null>(null);
+
+  useEffect(() => {
+    const onClick = () => setDeleting(null);
+    window.addEventListener('click', onClick);
+    return () => window.removeEventListener('click', onClick);
+  }, []);
 
   const handleDelete = (file: FileDetails) => {
     if (deleting && deleting.id == file.id) {
@@ -38,7 +44,13 @@ interface GalleryItemProps {
 const GalleryItem: React.FC<GalleryItemProps> = ({ file, deleting, onDelete }) => {
   return (
     <div key={file.id} className="relative rounded-lg overflow-hidden shadow-md w-full h-[400px]">
-      <button onClick={onDelete} className="absolute z-10 hover:scale-110 transition-all right-2 top-2 text-[25px]">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        className="absolute z-10 hover:scale-110 transition-all right-2 top-2 text-[25px]"
+      >
         {deleting && deleting.id == file.id ? <DeleteConfirm /> : <Delete />}
       </button>
 
