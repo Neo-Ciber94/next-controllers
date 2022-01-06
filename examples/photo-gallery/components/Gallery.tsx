@@ -38,16 +38,31 @@ interface GalleryItemProps {
 const GalleryItem: React.FC<GalleryItemProps> = ({ file, deleting, onDelete }) => {
   return (
     <div key={file.id} className="relative rounded-lg overflow-hidden shadow-md w-full h-[400px]">
-      <button
-        onClick={onDelete}
-        className="absolute z-10 hover:scale-110 transition-all right-2 top-2 text-[25px]"
-      >
+      <button onClick={onDelete} className="absolute z-10 hover:scale-110 transition-all right-2 top-2 text-[25px]">
         {deleting && deleting.id == file.id ? <DeleteConfirm /> : <Delete />}
       </button>
-      <Image src={imageUrl(file.url)} alt={file.fileName} layout="fill" objectFit="cover" />
+
+      <GalleryImage file={file} />
     </div>
   );
 };
+
+function GalleryImage({ file }: { file: FileDetails }) {
+  if (file.blurUrl == null) {
+    return <Image src={imageUrl(file.url)} alt={file.fileName} layout="fill" objectFit="cover" />;
+  }
+
+  return (
+    <Image
+      src={imageUrl(file.url)}
+      alt={file.fileName}
+      layout="fill"
+      objectFit="cover"
+      placeholder="blur"
+      blurDataURL={file.blurUrl}
+    />
+  );
+}
 
 function Delete() {
   return (

@@ -1,8 +1,12 @@
-import multer from 'multer';
+import multer, { Multer } from 'multer';
 import path from 'path';
+import fs from 'fs/promises';
 import * as uuid from 'uuid';
-import { UPLOAD_PATH } from '../../shared';
+import sharp from 'sharp';
+import { UPLOAD_PATH, URL_BLUR_PATH, URL_PATH } from '../../shared';
 import { ValidationError } from '../utils/validation-error';
+
+type MulterFile = Express.Multer.File;
 
 const multerOptions: multer.Options = {
   fileFilter: (_, file, cb) => {
@@ -20,5 +24,13 @@ const multerOptions: multer.Options = {
     },
   }),
 };
+
+export async function resizeDownAsBase64Image(file: MulterFile, size: number): Promise<string> {
+  // MulterFile.buffer is only available for MemoryStorage
+  const bytes = await fs.readFile(file.path);
+  const buffer = await sharp(bytes).resize(size, size, { fit: 'outside' }).toBuffer();
+  const data = buffer.toString('base64');
+  return 'data:' + file.mimetype + ';base64,' + data;
+}
 
 export const upload = multer(multerOptions);

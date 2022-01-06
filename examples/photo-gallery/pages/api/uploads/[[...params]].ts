@@ -13,10 +13,13 @@ import morgan from 'morgan';
 import { DiskPersistence } from '../../../server/utils/disk-persistence';
 import fs from 'fs/promises';
 import { UPLOAD_NAME, UPLOAD_PATH, URL_PATH } from '../../../shared';
-import { upload } from '../../../server/middlewares/upload';
+import { resizeDownAsBase64Image, upload } from '../../../server/middlewares/upload';
 import { UploadState, UploadPersistence, FileInfo } from '../../../server/models/types';
 import { FileDetails } from '../../../shared/types';
 import { ValidationError } from '../../../server/utils/validation-error';
+
+// 10px
+const BLUR_IMAGE_SIZE = 10;
 
 // Let multer handle the body parsing
 export const config = {
@@ -39,17 +42,24 @@ class UploadController {
       return Results.badRequest('No file to upload');
     }
 
-    return state.use((uploadState) => {
+    return state.use(async (uploadState) => {
       const id = ++uploadState.lastId;
-      const newFile: FileInfo = {
-        id,
-        fileName: file.filename,
-        mimetype: file.mimetype,
-        originalname: file.originalname,
-      };
+      try {
+        const base64Image = await resizeDownAsBase64Image(file, BLUR_IMAGE_SIZE);
+        const newFile: FileInfo = {
+          id,
+          fileName: file.filename,
+          mimetype: file.mimetype,
+          originalname: file.originalname,
+          blurBase64: base64Image,
+        };
 
-      uploadState.files[id] = newFile;
-      return newFile;
+        uploadState.files[id] = newFile;
+        return newFile;
+      } catch (error: any) {
+        const message = error.message || error.error || error;
+        return Results.badRequest(message + '');
+      }
     });
   }
 
@@ -61,10 +71,13 @@ class UploadController {
     for (const file of Object.values(uploadState.files)) {
       if (file != null) {
         const url = `${URL_PATH}${file.fileName}`;
+        const blurUrl = file.blurBase64;
+
         files.push({
           id: file.id,
           fileName: file.originalname,
           url,
+          blurUrl,
         });
       }
     }

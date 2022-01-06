@@ -3,6 +3,7 @@ import { DiskPersistence } from '../utils/disk-persistence';
 export type FileInfo = {
   id: number;
   originalname: string;
+  blurBase64?: string;
   fileName: string;
   mimetype: string;
 };

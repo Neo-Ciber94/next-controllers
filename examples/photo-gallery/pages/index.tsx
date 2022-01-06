@@ -9,6 +9,7 @@ import { Gallery } from '../components/Gallery';
 import { UPLOAD_NAME } from '../shared';
 import { assertTrue } from '../shared/utils';
 import { Letters } from '../components/Letters';
+import { FetchError } from '../client/fetch-error';
 
 const API_URL = '/api/uploads';
 
@@ -70,7 +71,7 @@ const Home: NextPage = () => {
       </div>
 
       {isLoading && <p className="text-white text-xl">Loading...</p>}
-      {isError && <p className="text-red-600 text-xl">Error : {errorMessage(error)}</p>}
+      {isError && <p className="text-red-600 text-xl">{errorMessage(error)}</p>}
       {data && <Gallery files={data} onDelete={handleDelete}></Gallery>}
     </div>
   );
@@ -90,15 +91,19 @@ const UploadButton: React.FC<ButtonProps> = (props) => (
 );
 
 function errorMessage(error: unknown): string {
+  let message = '';
+
   if (error instanceof Error) {
-    return error.message;
+    message = error.message;
+  } else if ((error as any).error) {
+    message = (error as any).error + '';
   }
 
-  if ((error as any).error) {
-    return (error as any).error + '';
+  if (message.length > 0) {
+    return 'Error: ' + message;
+  } else {
+    return 'Something went wrong';
   }
-
-  return error + '';
 }
 
 export default Home;

@@ -3,6 +3,8 @@
  */
 export const URL_PATH = 'uploads/images/';
 
+export const URL_BLUR_PATH = 'uploads/blur/';
+
 /**
  * Path to store the images.
  */

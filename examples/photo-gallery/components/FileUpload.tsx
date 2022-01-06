@@ -1,13 +1,16 @@
 import { ChangeEvent, FC, useState } from 'react';
-import { FaUpload, FaImage, FaSync } from 'react-icons/fa';
+import { FaSync } from 'react-icons/fa';
+import { getValueOrArray } from '../shared/utils';
 
 export interface FileUploadProps {
   onFile: (file: File) => void;
   onReset: () => void;
+  validTypes?: string | string[];
 }
 
-export const FileUpload: FC<FileUploadProps> = ({ onFile, onReset }) => {
+export const FileUpload: FC<FileUploadProps> = ({ onFile, onReset, validTypes }) => {
   const [file, setFile] = useState<File | null>(null);
+  const accept = validTypes ? getValueOrArray(validTypes).join(',') : undefined;
 
   const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -47,7 +50,7 @@ export const FileUpload: FC<FileUploadProps> = ({ onFile, onReset }) => {
       )}
 
       {/* Hidden */}
-      <input id="file-input" type="file" onChange={handleFile} />
+      <input id="file-input" type="file" accept={accept} onChange={handleFile} />
     </div>
   );
 };
