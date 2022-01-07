@@ -28,11 +28,18 @@ export const config = {
   },
 };
 
+/**
+ * A controller for file uploading.
+ */
 @UseMiddleware(morgan('dev'))
 @RouteController({
+  // Used as a local database to store the file upload information.
   state: new DiskPersistence<UploadState>('data/state.json', { lastId: 0, files: {} }),
 })
 class UploadController {
+  /**
+   * Handles a request to upload a file.
+   */
   @Post('/')
   @UseMiddleware(upload.single(UPLOAD_NAME))
   upload({ state, request }: NextApiContext<UploadPersistence>) {
@@ -42,10 +49,15 @@ class UploadController {
       return Results.badRequest('No file to upload');
     }
 
+    // This is like a transation, where the changes are saved at the end
     return state.use(async (uploadState) => {
       const id = ++uploadState.lastId;
+
       try {
+        // Convert the image to a base64 string to be used a blur image.
         const base64Image = await resizeDownAsBase64Image(file, BLUR_IMAGE_SIZE);
+
+        // The data to store in the state
         const newFile: FileInfo = {
           id,
           fileName: file.filename,
@@ -54,17 +66,27 @@ class UploadController {
           blurBase64: base64Image,
         };
 
+        // Save the file in the state
         uploadState.files[id] = newFile;
+
+        // Returns the newly created file info
         return newFile;
-      } catch (error: any) {
+      } 
+      catch (error: any) {
+        // FIXME: Remove the file from the disk.
         const message = error.message || error.error || error;
         return Results.badRequest(message + '');
       }
     });
   }
 
+
+  /**
+   * Gets an array with all the uploaded images and their details.
+   */
   @Get('/')
   async getAllImages({ state }: NextApiContext<UploadPersistence>): Promise<FileDetails[]> {
+    // Loads the images
     const uploadState = await state.load();
     const files: FileDetails[] = [];
 
@@ -85,8 +107,12 @@ class UploadController {
     return files;
   }
 
+  /**
+   * Gets the image with the given `id`.
+   */
   @Get('/:id')
   async getImage({ state, request }: NextApiContext<UploadPersistence>) {
+    // Loads the images
     const uploadState = await state.load();
     const id = request.params.id;
 
@@ -104,6 +130,9 @@ class UploadController {
     return Results.file(filePath, fileInfo.mimetype);
   }
 
+  /**
+   * Deletes the image with the given `id`.
+   */
   @Delete('/:id')
   async deleteImage({ state, request }: NextApiContext<UploadPersistence>) {
     const id = request.params.id;
@@ -115,6 +144,7 @@ class UploadController {
     const result = await state.use(async (uploadState) => {
       const fileInfo = uploadState.files[id];
 
+      // If the file is found, delete it from the state and the disk.
       if (fileInfo) {
         delete uploadState.files[id];
         await fs.unlink(`${UPLOAD_PATH}${fileInfo.fileName}`);
@@ -130,6 +160,9 @@ class UploadController {
     return result;
   }
 
+  /**
+   * Error handler for this controller.
+   */
   @OnError()
   onError(error: Error) {
     const message = error.message || error;
@@ -142,4 +175,5 @@ class UploadController {
   }
 }
 
+// Creates the handler with this controller
 export default withController(UploadController);

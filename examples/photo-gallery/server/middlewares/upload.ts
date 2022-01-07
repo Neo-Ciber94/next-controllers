@@ -1,9 +1,9 @@
-import multer, { Multer } from 'multer';
+import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import * as uuid from 'uuid';
 import sharp from 'sharp';
-import { UPLOAD_PATH, URL_BLUR_PATH, URL_PATH } from '../../shared';
+import { UPLOAD_PATH } from '../../shared';
 import { ValidationError } from '../utils/validation-error';
 
 type MulterFile = Express.Multer.File;
