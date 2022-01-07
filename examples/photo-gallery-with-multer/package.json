@@ -1,5 +1,5 @@
 {
-  "name": "photo-gallery",
+  "name": "photo-gallery-with-multer",
   "private": true,
   "scripts": {
     "dev": "next dev",
