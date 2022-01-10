@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useState } from 'react';
+import { ChangeEvent, FC } from 'react';
 import { FaSync } from 'react-icons/fa';
 import { getValueOrArray } from '../shared/utils';
 

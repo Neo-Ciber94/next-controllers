@@ -2,11 +2,12 @@ import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
 import styles from '../styles/Home.module.css';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api`;
 
 const Home: NextPage = () => {
   const [name, setName] = useState<string>('');
   const url = `${API_URL}/${encodeURIComponent(name.trim())}`;
+
   const { data, isLoading, error, refetch, isRefetching } = useFetch<string>(url, {
     delay: 1000,
     transform: async (res) => {

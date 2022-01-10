@@ -25,20 +25,18 @@ export function fetcher(url: string, initialConfig?: RequestInit): Fetcher {
   }
 
   const fn: FetcherFn = (params?: Params | null, requestConfig?: RequestInit) => {
-    let fullUrl = getBaseUrl() + url;
-
     if (params) {
       switch (typeof params) {
         case 'number':
         case 'string':
-          fullUrl += `/${params}`;
+          url += `/${params}`;
           break;
         case 'object':
           {
             const queryParams = Object.entries(params)
               .map(([key, value]) => `${key}=${value}`)
               .join('&');
-            fullUrl += `?${queryParams}`;
+              url += `?${queryParams}`;
           }
           break;
         default:
@@ -47,7 +45,7 @@ export function fetcher(url: string, initialConfig?: RequestInit): Fetcher {
     }
 
     const config = { ...initialConfig, ...requestConfig };
-    return fetchJson(fullUrl, config);
+    return fetchJson(url, config);
   };
 
   return createFetcher(fn);
@@ -71,14 +69,4 @@ function createFetcher(fn: FetcherFn): Fetcher {
   obj.patch = (params, config) => fn(params, { ...config, method: 'PATCH' });
   obj.delete = (params, config) => fn(params, { ...config, method: 'DELETE' });
   return obj;
-}
-
-function getBaseUrl(): string {
-  let baseUrl = process.env.FETCHER_BASE_URL || '';
-
-  if (baseUrl && baseUrl.endsWith('/')) {
-    baseUrl = baseUrl.slice(0, -1);
-  }
-
-  return baseUrl;
 }

@@ -18,4 +18,4 @@ export const UPLOAD_NAME = 'image';
 /**
  * Base URL
  */
-export const BASE_URL = 'http://localhost:3000';
+export const BASE_URL = `http://localhost:${process.env.NEXT_PUBLIC_PORT}`;

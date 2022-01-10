@@ -2,7 +2,7 @@
   "name": "rest-api-with-prisma",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
+    "dev": "cross-env-shell NEXT_PUBLIC_PORT=3000 \"next dev --port $NEXT_PUBLIC_PORT\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -23,6 +23,7 @@
     "@types/morgan": "^1.9.3",
     "@types/node": "16.11.11",
     "@types/react": "17.0.37",
+    "cross-env": "^7.0.3",
     "eslint": "8.4.0",
     "eslint-config-next": "12.0.6",
     "morgan": "^1.10.0",

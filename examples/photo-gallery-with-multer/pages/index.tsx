@@ -6,11 +6,11 @@ import { fetcher } from '../client/fetcher';
 import { FileDetails } from '../shared/types';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Gallery } from '../components/Gallery';
-import { UPLOAD_NAME } from '../shared';
+import { BASE_URL, UPLOAD_NAME } from '../shared';
 import { assertTrue } from '../shared/utils';
 import { Letters } from '../components/Letters';
 
-const API_URL = '/api/uploads';
+const API_URL = `${BASE_URL}/api/uploads`;
 
 const filesApi = fetcher(API_URL);
 

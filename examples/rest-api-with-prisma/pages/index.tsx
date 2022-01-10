@@ -5,7 +5,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { FaUser, FaThList } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `http://localhost:${process.env.NEXT_PUBLIC_PORT}/api`;
 const USERS_API = `${API_URL}/user`;
 const POSTS_API = `${API_URL}/post`;
 

@@ -4,7 +4,4 @@ module.exports = {
   images: {
     domains: ['localhost'],
   },
-  env: {
-    FETCHER_BASE_URL: 'http://localhost:3000',
-  },
 };
