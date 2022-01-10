@@ -5,7 +5,7 @@ import { Parsers, withTestController } from 'test/utils';
 class MyController {
   @Get('/')
   get() {
-    const stream = fs.createReadStream('./examples/assets/test.txt');
+    const stream = fs.createReadStream('./test/assets/test.txt');
     return Results.stream(stream, 'text/plain');
   }
 }
