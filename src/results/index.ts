@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { NextApiResponse } from 'next';
-import { assertTrue, HTTP_STATUS_CODES } from '..';
+import { assertTrue, HTTP_STATUS_CODES } from '../utils';
 
 /**
  * A callback to resolve a `Results`.

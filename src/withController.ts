@@ -15,9 +15,10 @@ import {
   RoutePath,
   MiddlewareHandler,
   ErrorMiddleware,
+  Results,
 } from '.';
 import { ErrorHandlerInterface } from './interfaces/error-handler';
-import { assertTrue, getFrames, HTTP_STATUS_CODES, PromiseUtils, Results, TimeoutError } from './utils';
+import { assertTrue, getFrames, HTTP_STATUS_CODES, PromiseUtils, TimeoutError } from './utils';
 
 const MIDDLEWARE_TIMEOUT = 5000;
 
