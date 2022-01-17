@@ -2,30 +2,30 @@ import { MiddlewareHandler, ObjectType } from './types';
 import { ActionMethod } from './action-method';
 import { RouteControllerConfig } from '..';
 
-interface ControllerMetadata {
+export interface ControllerMetadata {
   target: ObjectType<any>;
   config: RouteControllerConfig;
 }
 
-interface ControllerMethodMetadata {
+export interface ControllerMethodMetadata {
   target: ObjectType<any>;
   methodName: string;
 }
 
-interface ControllerActionMetadata {
+export interface ControllerActionMetadata {
   target: ObjectType<any>;
   pattern?: string | RegExp;
   method: ActionMethod;
   methodName: string;
 }
 
-interface ControllerMiddlewareMetadata {
+export interface ControllerMiddlewareMetadata {
   target: ObjectType<any>;
   methodName?: string;
   handler: MiddlewareHandler<any, any>;
 }
 
-interface ControllerHttpContextMetadata {
+export interface ControllerHttpContextMetadata {
   target: ObjectType<any>;
   propertyName: string;
 }
@@ -196,6 +196,38 @@ class ControllerMetadataStorage {
     for (const [target, contexts] of contextMetadata) {
       if (type.prototype instanceof target) {
         result.push(...contexts);
+      }
+    }
+
+    return result;
+  }
+
+  getBeforeRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
+    const result = this.beforeRequestMetadata.get(type);
+
+    if (!result) {
+      const beforeRequestMetadata = Array.from(this.beforeRequestMetadata.entries());
+
+      for (const [target, beforeRequest] of beforeRequestMetadata) {
+        if (type.prototype instanceof target) {
+          return beforeRequest;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  getAfterRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
+    const result = this.afterRequestMetadata.get(type);
+
+    if (!result) {
+      const afterRequestMetadata = Array.from(this.afterRequestMetadata.entries());
+
+      for (const [target, afterRequest] of afterRequestMetadata) {
+        if (type.prototype instanceof target) {
+          return afterRequest;
+        }
       }
     }
 
