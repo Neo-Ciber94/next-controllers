@@ -2223,10 +2223,10 @@
   "resolved" "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz"
   "version" "1.4.0"
 
-"next-controllers@^0.1.14":
-  "integrity" "sha512-amH4NCwo5CoAmK5ZpsoaZlSHqUQ3R6JQ2AMdin71ZaLi/ZsHYSsCd0oKQBYTSN+zzQPu+4vRVc4Io62p4kVUTg=="
-  "resolved" "https://registry.npmjs.org/next-controllers/-/next-controllers-0.1.14.tgz"
-  "version" "0.1.14"
+"next-controllers@^0.1.15":
+  "integrity" "sha512-2PGXnlPxvP58iUFhfCaujqm+33ugjsiaxp+UKMf0J7YTkge/e8hI/w7DNfXbdOnN+h7mJcvLKEMtFEpOs2qMCA=="
+  "resolved" "https://registry.npmjs.org/next-controllers/-/next-controllers-0.1.15.tgz"
+  "version" "0.1.15"
   dependencies:
     "body-parser" "^1.19.1"
     "next" "^12.0.7"
