@@ -29,6 +29,7 @@ class MyController {
 }
 
 const handler = withTestController(MyController);
+afterAll(() => handler.close());
 
 describe('@UseMiddleare', () => {
   it('should add middleware to the route', async () => {

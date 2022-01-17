@@ -1,6 +1,6 @@
 import { createServer, RequestListener } from 'http';
 import { apiResolver } from 'next/dist/server/api-utils';
-import { withController } from 'src';
+import { withController, WithControllerOptions } from 'src';
 import supertest from 'supertest';
 
 type ObjectType<T> = { new (...args: any[]): T };
@@ -18,13 +18,22 @@ type Parser = BrowserParser | NodeParser;
 export type SuperTestHandler = supertest.SuperTest<supertest.Test> & { close: () => void };
 
 /**
+ * Configuration for the test controller route.
+ */
+export type TestControllerConfig = string | WithControllerOptions;
+
+/**
  * Creates a test server with the given controller and returns a instance to send test request.
  * @param target The controller class.
  * @returns A `SuperTest` instance to test the controller that should be close at the end, to close the
  * underlying server used.
  */
-export function withTestController<T = any>(target: ObjectType<T>): SuperTestHandler {
-  const handler = withController(target, '');
+export function withTestController<T = any>(
+  target: ObjectType<T>,
+  optionsOrRoute?: TestControllerConfig,
+): SuperTestHandler {
+  const controllerOptions = optionsOrRoute == null ? '' : optionsOrRoute;
+  const handler = withController(target, controllerOptions as any);
 
   const listener: RequestListener = (req, res) => {
     const query = parseQuery(req.url);
@@ -96,7 +105,7 @@ export namespace Parsers {
     return (res, cb) => {
       res.setEncoding('binary');
       const data: Buffer[] = [];
-      
+
       res.on('data', (chunk) => {
         data.push(Buffer.from(chunk, 'binary'));
       });

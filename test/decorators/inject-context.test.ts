@@ -12,6 +12,7 @@ class InjectContextController {
 }
 
 const handler = withTestController(InjectContextController);
+afterAll(() => handler.close());
 
 describe('@Context decorator', () => {
   test('Inject HttpContext', () => {
