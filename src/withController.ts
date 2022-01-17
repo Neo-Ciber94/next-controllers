@@ -122,6 +122,12 @@ export function withController<
   const onNoMatchMetadata = metadataStore.getNoMatchHandler(target);
   const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
 
+  const beforeRequestMetadata = metadataStore.getBeforeRequest(target);
+  const beforeRequestHandler = beforeRequestMetadata ? controller[beforeRequestMetadata.methodName] : null;
+
+  const afterRequestMetadata = metadataStore.getAfterRequest(target);
+  const afterRequestHandler = afterRequestMetadata ? controller[afterRequestMetadata.methodName] : null;
+
   // Error handler for the controller
   let controllerOnError: ErrorHandler<Req, Res> | undefined;
 
@@ -220,6 +226,11 @@ export function withController<
     }
 
     try {
+      // Before request
+      if (beforeRequestHandler) {
+        await beforeRequestHandler(httpContext);
+      }
+
       // Run the controller middlewares
       if ((await runMiddlewares(opts, req, res, controllerMiddlewares)) === false || isResEnded(res)) {
         return;
@@ -232,7 +243,12 @@ export function withController<
 
       // Get and returns the route response
       const routeResult = await route.handler(httpContext);
-      return await sendResponse(httpContext.response, controllerConfig, routeResult);
+      await sendResponse(httpContext.response, controllerConfig, routeResult);
+
+      // After request
+      if (afterRequestHandler) {
+        await afterRequestHandler(httpContext);
+      }
     } catch (error) {
       // Handle the error
       const errorResult = await onError(error, httpContext);

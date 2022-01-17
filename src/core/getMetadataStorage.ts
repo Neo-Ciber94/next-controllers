@@ -201,6 +201,38 @@ class ControllerMetadataStorage {
 
     return result;
   }
+
+  getAfterRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
+    const result = this.afterRequestMetadata.get(type);
+
+    if (!result) {
+      const afterRequestMetadata = Array.from(this.afterRequestMetadata.entries());
+
+      for (const [target, afterRequest] of afterRequestMetadata) {
+        if (type.prototype instanceof target) {
+          return afterRequest;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  getBeforeRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
+    const result = this.beforeRequestMetadata.get(type);
+
+    if (!result) {
+      const beforeRequestMetadata = Array.from(this.beforeRequestMetadata.entries());
+
+      for (const [target, beforeRequest] of beforeRequestMetadata) {
+        if (type.prototype instanceof target) {
+          return beforeRequest;
+        }
+      }
+    }
+
+    return result;
+  }
 }
 
 const metadataStorage = new ControllerMetadataStorage();
