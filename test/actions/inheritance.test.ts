@@ -22,11 +22,13 @@ class NewController extends BaseController {
 
 const handler = withTestController(NewController);
 
+afterAll(() => handler.close());
+
 describe('Controller inheritance', () => {
   it('Request to overriden method', async () => {
     const response = await handler.get('/api/number');
     expect(response.status).toBe(200);
-    expect(response.text).toBe("35");
+    expect(response.text).toBe('35');
   });
 
   it('Request to base method', async () => {

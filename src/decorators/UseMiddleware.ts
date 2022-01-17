@@ -1,22 +1,23 @@
 import { getMetadataStorage, Middleware, ErrorMiddleware, MiddlewareHandler } from '..';
 
-/**
- * Register a middleware or collection of middlewares for a given route or controller.
- * @param middlewares The middlewares to register.
- */
-export function UseMiddleware<Req, Res>(...middlewares: Middleware<Req, Res>[]): MethodDecorator;
 
 /**
  * Register a middleware or collection of middlewares for a given route or controller.
  * @param middlewares The middlewares to register.
  */
-export function UseMiddleware<Req, Res>(...middlewares: ErrorMiddleware<Req, Res>[]): MethodDecorator;
+export function UseMiddleware<Req, Res>(...middlewares: Middleware<Req, Res>[]): any;
 
 /**
  * Register a middleware or collection of middlewares for a given route or controller.
  * @param middlewares The middlewares to register.
  */
-export function UseMiddleware<Req, Res>(...middlewares: MiddlewareHandler<Req, Res>[]): MethodDecorator {
+export function UseMiddleware<Req, Res>(...middlewares: ErrorMiddleware<Req, Res>[]): any;
+
+/**
+ * Register a middleware or collection of middlewares for a given route or controller.
+ * @param middlewares The middlewares to register.
+ */
+export function UseMiddleware<Req, Res>(...middlewares: MiddlewareHandler<Req, Res>[]) {
   return function (target: any, propertyKey?: string | symbol) {
     const methodName = propertyKey ? propertyKey.toString() : undefined;
     middlewares.forEach((handler) => {

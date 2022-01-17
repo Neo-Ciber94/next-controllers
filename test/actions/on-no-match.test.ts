@@ -25,6 +25,8 @@ class TestController {
 
 const handler = withTestController(TestController);
 
+afterAll(() => handler.close());
+
 describe('@OnNoMatch route', () => {
   test('should handle no match with response', async () => {
     const response = await handler.get('/no-found').set('source', 'response');

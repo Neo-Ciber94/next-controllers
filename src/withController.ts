@@ -69,12 +69,12 @@ export interface WithControllerOptions {
 /**
  * Creates a request handler using the specified controller.
  * @param target The controller class to use.
- * @param basePath The base path of the controller, the route path will resolve to: `/api/${basePath}`.
+ * @param route The route of the controller, the route path will resolve to: `/api/${basePath}`.
  */
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, basePath?: string): ApiHandler<Req, Res>;
+>(target: ObjectType<any>, route?: string): ApiHandler<Req, Res>;
 
 /**
  * Creates a request handler using the specified controller.
@@ -89,13 +89,13 @@ export function withController<
 /**
  * Creates a request handler using the specified controller.
  * @param target The controller class to use.
- * @param options Either the configuration options for the controller or the base path.
+ * @param optionsOrRoute Either the configuration options for the controller or the base path.
  */
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
   Res extends NextApiResponse = NextApiResponse,
->(target: ObjectType<any>, options?: string | WithControllerOptions): ApiHandler<Req, Res> {
-  const basePath = getBasePath(options);
+>(target: ObjectType<any>, optionsOrRoute?: string | WithControllerOptions): ApiHandler<Req, Res> {
+  const basePath = getBasePath(optionsOrRoute);
   const controller = new target();
   const controllerRoutes: ControllerRoute<Req, Res>[] = [];
   const metadataStore = getMetadataStorage();
@@ -105,7 +105,7 @@ export function withController<
   let shouldDecodeQueryParams = false;
 
   // `withController` options
-  const opts = optionsOrEmpty(options);
+  const opts = optionsOrEmpty(optionsOrRoute);
   shouldDecodeQueryParams = opts.decodeQueryParams === undefined || opts.decodeQueryParams === true;
 
   // prettier-ignore
@@ -226,11 +226,6 @@ export function withController<
     }
 
     try {
-      // Before request
-      if (beforeRequestHandler) {
-        await beforeRequestHandler(httpContext);
-      }
-
       // Run the controller middlewares
       if ((await runMiddlewares(opts, req, res, controllerMiddlewares)) === false || isResEnded(res)) {
         return;
@@ -239,6 +234,11 @@ export function withController<
       // Run the route middlewares
       if ((await runMiddlewares(opts, req, res, route.middlewares)) === false || isResEnded(res)) {
         return;
+      }
+
+      // Before request
+      if (beforeRequestHandler) {
+        await beforeRequestHandler(httpContext);
       }
 
       // Get and returns the route response
