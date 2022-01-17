@@ -89,7 +89,7 @@ export function withController<
 /**
  * Creates a request handler using the specified controller.
  * @param target The controller class to use.
- * @param optionsOrRoute Either the configuration options for the controller or the base path.
+ * @param optionsOrRoute Either the configuration options for the controller or route.
  */
 export function withController<
   Req extends NextApiRequestWithParams = NextApiRequestWithParams,
