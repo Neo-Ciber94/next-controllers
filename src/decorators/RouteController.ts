@@ -30,7 +30,7 @@ export interface RouteControllerConfig<T = any> {
    * An error handler for the controller.
    * This can be used instead of the `OnError` decorator.
    */
-  onError?: ErrorHandlerInterface | ErrorHandler<any, any>
+  onError?: ErrorHandlerInterface | ErrorHandler<any, any>;
 }
 
 /**

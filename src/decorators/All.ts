@@ -1,4 +1,4 @@
-import { getMetadataStorage } from '../core/getMetadataStorage';
+import { getMetadataStorage, getString } from '..';
 
 /**
  * Register a handler for request in all HTTP methods.
@@ -6,8 +6,9 @@ import { getMetadataStorage } from '../core/getMetadataStorage';
  * @remarks In case of conflict with other handler, `All` will have the lowest priority.
  * @param pattern Pattern for matching the route.
  */
-export function All(pattern?: string | RegExp) {
-  return function (target: any, methodName: string) {
+export function All(pattern?: string | RegExp): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol) {
+    const methodName = getString(propertyKey);
     getMetadataStorage().addAction({
       target: target.constructor,
       pattern: pattern,

@@ -7,20 +7,15 @@ interface ControllerMetadata {
   config: RouteControllerConfig;
 }
 
+interface ControllerMethodMetadata {
+  target: ObjectType<any>;
+  methodName: string;
+}
+
 interface ControllerActionMetadata {
   target: ObjectType<any>;
   pattern?: string | RegExp;
   method: ActionMethod;
-  methodName: string;
-}
-
-interface ControllerErrorHandlerMetadata {
-  target: ObjectType<any>;
-  methodName: string;
-}
-
-interface ControllerNoMatchHandlerMetadata {
-  target: ObjectType<any>;
   methodName: string;
 }
 
@@ -46,16 +41,22 @@ class ControllerMetadataStorage {
   private readonly actionMetadata = new Map<ObjectType<any>, ControllerActionMetadata[]>();
 
   // prettier-ignore
-  private readonly errorHandlers = new Map<ObjectType<any>, ControllerErrorHandlerMetadata>();
+  private readonly errorHandlers = new Map<ObjectType<any>, ControllerMethodMetadata>();
 
   // prettier-ignore
-  private readonly noMatchHandlers = new Map<ObjectType<any>, ControllerNoMatchHandlerMetadata>();
+  private readonly noMatchHandlers = new Map<ObjectType<any>, ControllerMethodMetadata>();
 
   // prettier-ignore
   private readonly middlewaresMetadata = new Map<ObjectType<any>, ControllerMiddlewareMetadata[]>();
 
   // prettier-ignore
   private readonly contextMetadata = new Map<ObjectType<any>, ControllerHttpContextMetadata[]>();
+
+  // prettier-ignore
+  private readonly afterRequestMetadata = new Map<ObjectType<any>, ControllerMethodMetadata>();
+
+  // prettier-ignore
+  private readonly beforeRequestMetadata = new Map<ObjectType<any>, ControllerMethodMetadata>();
 
   addController(controllerMetadata: ControllerMetadata) {
     this.controllersMetadata.set(controllerMetadata.target, controllerMetadata);
@@ -78,11 +79,11 @@ class ControllerMetadataStorage {
     }
   }
 
-  addErrorHandler(errorHandler: ControllerErrorHandlerMetadata) {
+  addErrorHandler(errorHandler: ControllerMethodMetadata) {
     this.errorHandlers.set(errorHandler.target, errorHandler);
   }
 
-  addNoMatchHandler(noMatchHandler: ControllerNoMatchHandlerMetadata) {
+  addNoMatchHandler(noMatchHandler: ControllerMethodMetadata) {
     this.noMatchHandlers.set(noMatchHandler.target, noMatchHandler);
   }
 
@@ -104,6 +105,14 @@ class ControllerMetadataStorage {
     } else {
       this.contextMetadata.set(context.target, [context]);
     }
+  }
+
+  addAfterRequest(afterRequest: ControllerMethodMetadata) {
+    this.beforeRequestMetadata.set(afterRequest.target, afterRequest);
+  }
+
+  addBeforeRequest(beforeRequest: ControllerMethodMetadata) {
+    this.afterRequestMetadata.set(beforeRequest.target, beforeRequest);
   }
 
   getController(type: ObjectType<any>): ControllerMetadata | undefined {
@@ -135,7 +144,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
-  getErrorHandler(type: ObjectType<any>): ControllerErrorHandlerMetadata | undefined {
+  getErrorHandler(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.errorHandlers.get(type);
 
     if (!result) {
@@ -151,7 +160,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
-  getNoMatchHandler(type: ObjectType<any>): ControllerNoMatchHandlerMetadata | undefined {
+  getNoMatchHandler(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.noMatchHandlers.get(type);
 
     if (!result) {

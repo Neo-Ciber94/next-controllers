@@ -1,4 +1,4 @@
-import { getMetadataStorage } from '..';
+import { getMetadataStorage, getString } from '..';
 
 /**
  * Register a method that handles errors in the form:
@@ -6,8 +6,9 @@ import { getMetadataStorage } from '..';
  * (err: unknown, context: NextApiContext) => void
  * ```
  */
-export function OnError() {
-  return function (target: any, methodName: string) {
+export function OnError(): MethodDecorator {
+  return function (target: any, propertyKey: string | symbol) {
+    const methodName = getString(propertyKey);
     getMetadataStorage().addErrorHandler({
       target: target.constructor,
       methodName,
