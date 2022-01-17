@@ -5,7 +5,7 @@ import { Parsers, withTestController } from 'test/utils';
 class MyController {
   @Get('/')
   get() {
-    const buffer = fs.readFileSync('./test/assets/test.txt');
+    const buffer = fs.readFileSync('./examples/assets/test.txt');
     return Results.bytes(buffer, 'text/plain');
   }
 }

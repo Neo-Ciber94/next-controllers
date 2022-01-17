@@ -4,7 +4,7 @@ import { withTestController } from 'test/utils';
 class MyController {
   @Get('/')
   get() {
-    return Results.file('./test/assets/test.txt', 'text/plain');
+    return Results.file('./examples/assets/test.txt', 'text/plain');
   }
 }
 

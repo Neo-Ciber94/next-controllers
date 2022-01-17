@@ -5,7 +5,7 @@ class MyController {
   @Get('/')
   get() {
     return Results.download({
-      filePath: './test/assets/test.txt',
+      filePath: './examples/assets/test.txt',
       contentType: 'text/plain',
       fileName: 'test.txt',
     });
