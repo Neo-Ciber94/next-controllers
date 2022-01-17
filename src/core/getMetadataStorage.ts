@@ -58,10 +58,12 @@ class ControllerMetadataStorage {
   // prettier-ignore
   private readonly beforeRequestMetadata = new Map<ObjectType<any>, ControllerMethodMetadata>();
 
+  // @internal
   addController(controllerMetadata: ControllerMetadata) {
     this.controllersMetadata.set(controllerMetadata.target, controllerMetadata);
   }
 
+  // @internal
   addAction(actionMetadata: ControllerActionMetadata) {
     const actions = this.actionMetadata.get(actionMetadata.target);
 
@@ -79,14 +81,17 @@ class ControllerMetadataStorage {
     }
   }
 
+  // @internal
   addErrorHandler(errorHandler: ControllerMethodMetadata) {
     this.errorHandlers.set(errorHandler.target, errorHandler);
   }
 
+  // @internal
   addNoMatchHandler(noMatchHandler: ControllerMethodMetadata) {
     this.noMatchHandlers.set(noMatchHandler.target, noMatchHandler);
   }
 
+  // @internal
   addMiddleware(middleware: ControllerMiddlewareMetadata) {
     const middlewares = this.middlewaresMetadata.get(middleware.target);
 
@@ -97,6 +102,7 @@ class ControllerMetadataStorage {
     }
   }
 
+  // @internal
   addContext(context: ControllerHttpContextMetadata) {
     const contexts = this.contextMetadata.get(context.target);
 
@@ -107,14 +113,17 @@ class ControllerMetadataStorage {
     }
   }
 
+  // @internal
   addAfterRequest(afterRequest: ControllerMethodMetadata) {
     this.beforeRequestMetadata.set(afterRequest.target, afterRequest);
   }
 
+  // @internal
   addBeforeRequest(beforeRequest: ControllerMethodMetadata) {
     this.afterRequestMetadata.set(beforeRequest.target, beforeRequest);
   }
 
+  // @internal
   getController(type: ObjectType<any>): ControllerMetadata | undefined {
     const result = this.controllersMetadata.get(type);
 
@@ -131,6 +140,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getActions(type: ObjectType<any>): ControllerActionMetadata[] {
     const result: ControllerActionMetadata[] = this.actionMetadata.get(type) || [];
     const actionsMetadata = Array.from(this.actionMetadata.entries());
@@ -144,6 +154,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getErrorHandler(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.errorHandlers.get(type);
 
@@ -160,6 +171,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getNoMatchHandler(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.noMatchHandlers.get(type);
 
@@ -176,6 +188,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getMiddlewares(type: ObjectType<any>): ControllerMiddlewareMetadata[] {
     const result: ControllerMiddlewareMetadata[] = this.middlewaresMetadata.get(type) || [];
     const middlewaresMetadata = Array.from(this.middlewaresMetadata.entries());
@@ -189,6 +202,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getContext(type: ObjectType<any>): ControllerHttpContextMetadata[] {
     const result: ControllerHttpContextMetadata[] = this.contextMetadata.get(type) || [];
     const contextMetadata = Array.from(this.contextMetadata.entries());
@@ -202,6 +216,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getAfterRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.afterRequestMetadata.get(type);
 
@@ -218,6 +233,7 @@ class ControllerMetadataStorage {
     return result;
   }
 
+  // @internal
   getBeforeRequest(type: ObjectType<any>): ControllerMethodMetadata | undefined {
     const result = this.beforeRequestMetadata.get(type);
 
