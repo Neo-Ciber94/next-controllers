@@ -115,12 +115,12 @@ class ControllerMetadataStorage {
 
   // @internal
   addAfterRequest(afterRequest: ControllerMethodMetadata) {
-    this.beforeRequestMetadata.set(afterRequest.target, afterRequest);
+    this.afterRequestMetadata.set(afterRequest.target, afterRequest);
   }
 
   // @internal
   addBeforeRequest(beforeRequest: ControllerMethodMetadata) {
-    this.afterRequestMetadata.set(beforeRequest.target, beforeRequest);
+    this.beforeRequestMetadata.set(beforeRequest.target, beforeRequest);
   }
 
   // @internal
