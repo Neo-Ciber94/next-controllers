@@ -124,10 +124,10 @@ export function withController<
   const noMatchHandler = onNoMatchMetadata ? controller[onNoMatchMetadata.methodName] : null;
 
   const beforeRequestMetadata = metadataStore.getBeforeRequest(target);
-  const beforeRequestHandler = beforeRequestMetadata ? controller[beforeRequestMetadata.methodName] : null;
+  const beforeRequestHandler = beforeRequestMetadata ? controller[beforeRequestMetadata.methodName].bind(controller) : null;
 
   const afterRequestMetadata = metadataStore.getAfterRequest(target);
-  const afterRequestHandler = afterRequestMetadata ? controller[afterRequestMetadata.methodName] : null;
+  const afterRequestHandler = afterRequestMetadata ? controller[afterRequestMetadata.methodName].bind(controller) : null;
 
   // Error handler for the controller
   let controllerOnError: ErrorHandler<Req, Res> | undefined;
