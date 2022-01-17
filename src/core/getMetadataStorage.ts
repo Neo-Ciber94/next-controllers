@@ -251,11 +251,16 @@ class ControllerMetadataStorage {
   }
 }
 
-const metadataStorage = new ControllerMetadataStorage();
+// Single instance
+let metadataStorage: ControllerMetadataStorage | null;
 
 /**
  * Gets the metadata for all the stored controllers.
  */
 export function getMetadataStorage(): ControllerMetadataStorage {
+  if (!metadataStorage) {
+    metadataStorage = new ControllerMetadataStorage();
+  }
+
   return metadataStorage;
 }
