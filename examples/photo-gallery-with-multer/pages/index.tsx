@@ -10,18 +10,23 @@ import { BASE_URL, UPLOAD_NAME } from '../shared';
 import { assertTrue } from '../shared/utils';
 import { Letters } from '../components/Letters';
 
-const API_URL = `${BASE_URL}/api/uploads`;
-
+const API_URL = `${BASE_URL}/api/uploads`
 const filesApi = fetcher(API_URL);
 
 const Home: NextPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
 
-  const { data, isLoading, ...query } = useQuery(API_URL, () => filesApi<FileDetails[]>());
+  const { data, isLoading, isRefetching, ...query } = useQuery(API_URL, () => filesApi<FileDetails[]>());
+
   const deleteFile = useMutation<FileDetails, null, FileDetails>({
     mutationFn: (f) => filesApi.delete<FileDetails>(f.id),
-    onSuccess: () => queryClient.invalidateQueries(API_URL),
+    onSuccess: async () => {
+      window.location.reload();
+
+      // FIXME: query is not being invalidated, so we just reload the page
+      await queryClient.invalidateQueries(API_URL);
+    },
   });
 
   const uploadFile = useMutation<FileDetails, null, File>({
@@ -40,7 +45,7 @@ const Home: NextPage = () => {
   const error = query.error || uploadFile.error || deleteFile.error;
 
   const handleReset = () => setFile(null);
-  const handleDelete = (file: FileDetails) => deleteFile.mutate(file);
+  const handleDelete = (file: FileDetails) => deleteFile.mutateAsync(file);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -71,7 +76,7 @@ const Home: NextPage = () => {
         </form>
       </div>
 
-      {isLoading && <p className="text-white text-xl">Loading...</p>}
+      {(isLoading || isRefetching) && <p className="text-white text-xl">Loading...</p>}
       {isError && <p className="text-red-600 text-xl">{errorMessage(error)}</p>}
       {data && <Gallery files={data} onDelete={handleDelete}></Gallery>}
       {data?.length === 0 && (
