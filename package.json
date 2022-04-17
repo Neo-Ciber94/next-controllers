@@ -53,6 +53,7 @@
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "chalk": "^5.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
     "jest": "^27.4.5",
     "npm-watch": "^0.11.0",

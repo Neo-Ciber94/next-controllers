@@ -27,7 +27,11 @@ yarn add next-controllers
    }
    ```
 
-2. Add or modify a `.babelrc` file with the following content:
+## Babel (Optional)
+
+By default the `NextJS` will [detect the decorators](https://nextjs.org/docs/advanced-features/compiler#legacy-decorators) and use the ``SWC`` compiler to compile the code. In case of requiring `babel` you should also add this to enable the decorators:
+
+1. Add or modify a `.babelrc` file with the following content:
 
    ```json
    {
@@ -36,7 +40,7 @@ yarn add next-controllers
    }
    ```
 
-3. Install the `babel` dependencies
+2. Install the `babel` dependencies
 
    ```codecopy
    npm i -D @babel/plugin-proposal-class-properties @babel/plugin-proposal-decorators
