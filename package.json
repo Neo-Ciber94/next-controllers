@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "body-parser": "^1.19.1",
-    "next": "^12.0.7",
+    "next": "^12.1.6",
     "regexparam": "^2.0.0",
     "stacktrace-parser": "^0.1.10"
   },
